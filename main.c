@@ -41,7 +41,7 @@ void makeDirs(char* path, char** argv) {
 	if (mkdir(argv[1], 0777) != 0) {
 		// look, I know this looks really stupid, but idk how to do this any better
 		char* error;
-		asprintf(&error, "ccli: could not create project: could not create directory at \'%s\'", path);
+		asprintf(&error, "cpm: could not create project: could not create directory at \'%s\'", path);
 		perror(error);
 	}
 
@@ -65,8 +65,8 @@ void createCppFiles(char* path, char** argv) {
 	createMakeFile();
 }
 
-void printUsage() {
-	printf("usage: ccli <project-name> [options]");
+void printUsage(char* programName) {
+	printf("usage: %s <project-name> [options]", programName);
 	printf("\noptions:");
 	printf("\n	c: creates a new C project (default behavior)");
 	printf("\n	cpp/CPP/c++: creates a new C++ project");
@@ -77,30 +77,33 @@ int main(int argc, char** argv) {
 
 	getcwd(path, 256);
 
-	if (argc < 2 || strcmp(argv[1], "help") == 0) {
-		printUsage();
+	if (argc < 2) {
+		printUsage(argv[0]);
+
+		return 0;
 	}
 
-	if (argc >= 3) {
-		if (checkC(argv[2])) {
-			createCFiles(path, argv);
+	if (strcmp(argv[1], "help") == 0) {
+		printUsage(argv[0]);
 
-			return 0;
-		}
-		if (checkCpp(argv[2])) {
-			createCppFiles(path, argv);
+		return 0;
+	}
 
-			return 0;
-		}
-
+	if (argc < 3) {
 		createCFiles(path, argv);
 
 		return 0;
 	}
 
-	if (argc >= 2) {
+	if (checkC(argv[2])) {
 		createCFiles(path, argv);
 
 		return 0;
+	} else if (checkCpp(argv[2])) {
+		createCppFiles(path, argv);
+
+		return 0;
 	}
+
+	printUsage(argv[0]);
 }
