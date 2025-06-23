@@ -69,7 +69,7 @@ void printUsage(char* programName) {
 	printf("usage: %s <project-name> [options]", programName);
 	printf("\noptions:");
 	printf("\n	c: creates a new C project (default behavior)");
-	printf("\n	cpp/CPP/c++: creates a new C++ project");
+	printf("\n	cpp/CPP/c++: creates a new C++ project\n");
 }
 
 int main(int argc, char** argv) {
