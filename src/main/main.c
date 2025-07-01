@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,21 +17,21 @@ int checkCpp(char* string) {
 	return (strcmp(string, "cpp") == 0 || strcmp(string, "CPP") == 0 || strcmp(string, "c++") == 0);
 }
 
-void createCFile() {
+void createCFile(void) {
 	mainfile = fopen("main.c", "w");
 	fputs("#include <stdio.h>\n#include <stdlib.h>\n\nint main(int argc, char **argv) {\n	printf(\"Hello, world!\");\n}", mainfile);
 	headerfile = fopen("header.h", "w");
 	fputs("#ifndef HEADER\n#define HEADER\n\n\n#endif", headerfile);
 }
 
-void createCppFile() {
+void createCppFile(void) {
 	mainfile = fopen("main.cpp", "w");
 	fputs("#include <iostream>\n\nusing namespace std;\n\nint main(int argc, char** argv) {\n	cout << \"Hello, world!\";\n}", mainfile);
 	headerfile = fopen("header.hpp", "w");
 	fputs("#ifndef HEADER\n#define HEADER\n\n\n#endif", headerfile);
 }
 
-void createMakeFile() {
+void createMakeFile(void) {
 	makefile = fopen("Makefile", "w");
 	fputs("main:\n	gcc -o main main.c\nclean:\n	rm main", makefile);
 }
@@ -39,10 +40,8 @@ void makeDirs(char* path, char** argv) {
 	chdir(path);
 
 	if (mkdir(argv[1], 0777) != 0) {
-		// look, I know this looks really stupid, but idk how to do this any better
-		char* error;
-		asprintf(&error, "cpm: could not create project: could not create directory at \'%s\'", path);
-		perror(error);
+		fprintf(stderr, "cpm: could not create project: could not create directory at \'%s\': %s", path, strerror(errno));
+		exit(1);
 	}
 
 	strcat(path, "/");
