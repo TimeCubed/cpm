@@ -8,7 +8,7 @@ BIN_DIR  := $(OUT_DIR)/bin
 ALL_DIRS := $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(OUT_DIR) $(BIN_DIR) $(LIBS_DIR)
 TARGET   := $(BIN_DIR)/cpm
 
-INCLUDES := $(HDR_DIR) ./libs/cJSON/include/
+INCLUDES := $(HDR_DIR)
 CC       := gcc
 CFLAGS   := -Werror -Wall -Wextra -Wpedantic
 LFLAGS   := 
