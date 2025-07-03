@@ -40,6 +40,8 @@ static void changeWD(void) {
 	path[lastSlash + 1] = '\0';
 
 	chdir(path);
+
+	free(path);
 }
 
 int main(void) {
@@ -60,4 +62,6 @@ int main(void) {
 	}
 
 	printf("contents: \n%s\n", contents);
+
+	free(tmplFile);
 }
