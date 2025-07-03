@@ -1,36 +1,28 @@
 #include <main.h>
+#include <tmplparser.h>
 #include <stdbool.h>
 #include <string.h>
 
 #define READ_CHUNK 128
 
-typedef struct {
-	char* contents;
-	size_t length;
-} TMPLFile;
-
-typedef struct {
-	char* contents;
-	size_t length;
-	size_t startIndex;
-	size_t endIndex;
-} Line;
-
 TMPLFile* tmpl_loadFile(const char* path) {
 	TMPLFile* tmplFile = calloc(1, sizeof(TMPLFile));
+
+	if (tmplFile == NULL) {
+		return NULL;
+	}
 
 	FILE* file = fopen(path, "r");
 
 	if (file == NULL) {
-		perror("file open fail");
-		return 0;
+		return NULL;
 	}
 
 	size_t used = 0, bufSize = READ_CHUNK;
 	char* contents = malloc(READ_CHUNK);
 
 	if (contents == NULL) {
-		perror("malloc fail");
+		fclose(file);
 		return NULL;
 	}
 
@@ -42,6 +34,7 @@ TMPLFile* tmpl_loadFile(const char* path) {
 
 			if (tmp == NULL) {
 				free(contents);
+				fclose(file);
 
 				perror("realloc fail");
 				return NULL;
@@ -50,7 +43,7 @@ TMPLFile* tmpl_loadFile(const char* path) {
 			contents = tmp;
 		}
 
-		int ret = fread(contents + used, sizeof(char), READ_CHUNK, file);
+		size_t ret = fread(contents + used, sizeof(char), READ_CHUNK, file);
 
 		if (ret == 0) {
 			break;
@@ -59,79 +52,40 @@ TMPLFile* tmpl_loadFile(const char* path) {
 		used += ret;
 	}
 
-	char* tmp = realloc(contents, used + 1);
-
-	if (tmp == NULL) {
-		return NULL;
-	}
-
-	contents = tmp;
 	contents[used] = '\0';
 
-	tmplFile->length = used + 1;
+	tmplFile->length = used;
 	tmplFile->contents = contents;
+
+	fclose(file);
 
 	return tmplFile;
 }
 
 static Line* splitByNewline(const char* string, const size_t length, size_t* lineCount) {
 	Line* lines = calloc(1, sizeof(Line));
-	size_t lnCount = 0;
 
-	const size_t chunk = 32;
-	char* buf = malloc(chunk);
-	size_t used = 0, bufSize = chunk;
+	if (lines == NULL) {
+		return NULL;
+	}
+
+	size_t lnCount = 0;
+	size_t lineLength = 0;
 
 	for (size_t i = 0; i < length; i++) {
-		if (used + 2 > bufSize) {
-			bufSize += chunk + 1;
-
-			char* tmp = realloc(buf, bufSize);
-
-			if (tmp == NULL) {
-				free(buf);
-				free(lines);
-
-				return NULL;
-			}
-
-			buf = tmp;
-		}
-
-		buf[used++] = string[i];
+		lineLength++;
 
 		if (string[i] == '\n') {
-			char* tmp = realloc(buf, used);
+			lines[lnCount].length = lineLength - 1;
+			lines[lnCount].startIndex = i - lineLength + 1;
 
-			if (tmp == NULL) {
-				free(buf);
-				free(lines);
-
-				return NULL;
-			}
-
-			buf = tmp;
-			buf[used - 1] = '\0';
-
-			lines[lnCount].contents = buf;
-			lines[lnCount].length = used - 1;
-			lines[lnCount].startIndex = i - used + 1;
-			lines[lnCount].endIndex = i;
-
-			buf = malloc(chunk);
-			
-			if (buf == NULL) {
-				return NULL;
-			}
-
-			used = 0, bufSize = chunk;
+			lineLength = 0;
 
 			lnCount++;
 
-			Line* tmpLines = realloc(lines, (lnCount + 1) * sizeof(Line));
+			Line* tmpLines = realloc(lines, (lnCount * 2) * sizeof(Line));
 
 			if (tmpLines == NULL) {
-				free(buf);
 				free(lines);
 
 				return NULL;
@@ -145,68 +99,84 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	return lines;
 }
 
-char* tmpl_getContentsOfSection(TMPLFile* tmplFile, const char* sectionName, size_t* length) {
+char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length) {
 	size_t lineCount;
 	Line* lines = splitByNewline(tmplFile->contents, tmplFile->length, &lineCount);
 
-	if (lines == NULL || tmplFile == NULL || sectionName == NULL) {
+	if (tmplFile == NULL || lines == NULL || sectionName == NULL) {
 		return NULL;
 	}
 
-	size_t i, startIndex;
+	size_t sectionIndex;
 	bool foundSection = false;
 
-	for (i = 0; i < lineCount; i++) {
-		char* line = lines[i].contents;
+	const char* fileContents = tmplFile->contents;
+
+	for (size_t i = 0; i < lineCount; i++) {
+		size_t startIndex = lines[i].startIndex;
 		size_t lineLength = lines[i].length;
+		//printf("line: %lu, startIndex: %lu, length: %lu, currChar: %c\n", i, startIndex, lineLength, fileContents[startIndex]);
 
 		if (lineLength < 3) {
 			continue;
 		}
 
-		if (line[0] != '[' || line[lineLength - 1] != ']') {
+		if (fileContents[startIndex] != '[' || fileContents[startIndex + lineLength - 1] != ']') {
 			continue;
 		}
 
-		if (strncmp(sectionName, line + 1, lineLength - 2) == 0) {
+		if (strlen(sectionName) == lineLength - 2 && strncmp(sectionName, fileContents + startIndex + 1, lineLength - 2) == 0) {
 			foundSection = true;
-			startIndex = lines[i].endIndex + 1;
+			sectionIndex = startIndex + lineLength + 1;
 
 			break;
 		}
 	}
+
+	free(lines);
 
 	if (!foundSection) {
 		return NULL;
 	}
 
 	// load contents
-	char* buf = malloc(READ_CHUNK);
+	char* sectionContents = malloc(READ_CHUNK);
+
+	if (sectionContents == NULL) {
+		return NULL;
+	}
+
 	size_t used = 0, bufSize = READ_CHUNK;
 
-	char* contents = tmplFile->contents;
-	for (size_t i = startIndex; i < tmplFile->length; i++) {
-		if (contents[i] == '[') {
+	for (size_t i = sectionIndex; i < tmplFile->length; i++) {
+		if (fileContents[i] == '[') {
 			break;
 		}
 
 		if (used + READ_CHUNK + 1 > bufSize) {
 			bufSize += READ_CHUNK + 1;
 
-			char* tmp = realloc(buf, bufSize);
+			char* tmp = realloc(sectionContents, bufSize);
 
 			if (tmp == NULL) {
+				free(sectionContents);
+
 				return NULL;
 			}
 
-			buf = tmp;
+			sectionContents = tmp;
 		}
 
-		buf[used++] = contents[i];
+		sectionContents[used++] = fileContents[i];
 	}
 
-	buf[used - 1] = '\0';
-	if (length) *length = used - 1;
+	if (used > 0) {
+		sectionContents[used - 1] = '\0';
+		if (length) *length = used - 1;
+	} else {
+		sectionContents[0] = '\0';
+		if (length) *length = 0;
+	}
 
-	return buf;
+	return sectionContents;
 }
