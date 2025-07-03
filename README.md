@@ -3,3 +3,5 @@ CPM is a small tool I made in C to quickly make C/C++ projects. When given a pro
 Also, the name is a shorthand for "C Project Maker". It might also be vulnerable to buffer overflows, so be careful I guess.
 
 Feel free to laugh at my horrible C code.
+
+NOTE: current src is not functional yet, I'm currently remaking CPM to add new features to it. use the release version
