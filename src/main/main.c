@@ -1,3 +1,4 @@
+#include "cliswitch.h"
 #include <main.h>
 #include <tmplparser.h>
 #include <unistd.h>
@@ -44,7 +45,11 @@ static void changeWD(void) {
 	free(path);
 }
 
-int main(void) {
+void setNoFolders(void) {
+	printf("placeholder\n");
+}
+
+int main(int argc, char** argv) {
 	changeWD();
 
 	TMPLFile* tmplFile = tmpl_loadFile("resources/templates-no-folders.tmpl");
@@ -64,4 +69,8 @@ int main(void) {
 	printf("contents: \n%s\n", contents);
 
 	free(tmplFile);
+
+	addSwitch("-no-folders", setNoFolders);
+	
+	parseArgv(argc, argv);
 }
