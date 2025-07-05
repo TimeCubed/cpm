@@ -1,9 +1,17 @@
 #include "cliswitch.h"
 #include <main.h>
 #include <tmplparser.h>
+#include <stdbool.h>
+
+#ifdef LINUX
 #include <unistd.h>
 #include <linux/limits.h>
-#include <stdbool.h>
+#endif
+
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+
 
 typedef enum {
 	EXTENDED,
