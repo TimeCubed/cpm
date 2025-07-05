@@ -13,25 +13,45 @@ typedef enum {
 
 bool g_isC = true;
 bool g_isCPP = false;
-Structure projectStructure = EXTENDED;
+Structure g_projectStructure = EXTENDED;
 
+#ifdef LINUX
 static char* getExecutablePath(size_t* len) {
 	char* buffer = malloc(PATH_MAX);
 
 	*len = readlink("/proc/self/exe", buffer, PATH_MAX - 1);
 
-        if (*len == -1ul) {
-          fprintf(stderr, "ERROR: couldn't get executable path\n");
+	if (*len == -1ul) {
+		fprintf(stderr, "ERROR: couldn't get executable path\n");
 
-          free(buffer);
+		free(buffer);
 
-          return NULL;
-        }
+		return NULL;
+	}
 
-        buffer[*len - 1] = '\0';
+	buffer[*len - 1] = '\0';
 
 	return buffer;
 }
+#endif
+#ifdef WINDOWS
+static char* getExecutablePath(size_t* len) {
+	return NULL;
+}
+#endif
+
+#ifndef LINUX
+#ifndef WINDOWS
+
+static char* getExecutablePath(size_t* len) {
+	*len = 0; // pedantic errors really are pedantic aren't they
+
+	printf("No platform set during compilation. Aborting..\n");
+	exit(1);
+}
+
+#endif
+#endif
 
 static void changeWD(void) {
 	size_t len;
@@ -67,15 +87,15 @@ void setCPP(void) {
 }
 
 void setExtended(void) {
-	projectStructure = EXTENDED;
+	g_projectStructure = EXTENDED;
 }
 
 void setMinimal(void) {
-	projectStructure = MINIMAL;
+	g_projectStructure = MINIMAL;
 }
 
 void setNoFolders(void) {
-	projectStructure = NO_FOLDERS;
+	g_projectStructure = NO_FOLDERS;
 }
 
 int main(int argc, char** argv) {
@@ -107,7 +127,7 @@ int main(int argc, char** argv) {
 
 	int nonSwitchIndex = parseArgv(argc, argv);
 
-	printf("current setup:\n c: %i, c++: %i\nproject structure: %i\n", g_isC, g_isCPP, projectStructure);
+	printf("current setup:\n c: %i, c++: %i\nproject structure: %i\n", g_isC, g_isCPP, g_projectStructure);
 	printf("first nonswitch index: %i\n", nonSwitchIndex);
 	if (nonSwitchIndex > 0) printf("first nonswitch argument: %s\n", argv[nonSwitchIndex]);
 }
