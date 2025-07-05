@@ -1,5 +1,6 @@
 #include <main.h>
 #include <cliswitch.h>
+#include <stdbool.h>
 #include <string.h>
 
 Func* callbacks;
@@ -9,7 +10,7 @@ size_t callbackC = 1, switchesC = 1;
 
 static int init(void) {
 	if (callbacks == NULL) {
-		callbacks = calloc(1, sizeof(Func));
+		callbacks = calloc(callbackC, sizeof(Func));
 
 		if (callbacks == NULL) {
 			return STATUS_FAIL;
@@ -17,7 +18,7 @@ static int init(void) {
 	}
 
 	if (switches == NULL) {
-		switches = calloc(1, sizeof(char**));
+		switches = calloc(switchesC, sizeof(char**));
 
 		if (switches == NULL) {
 			return STATUS_FAIL;
@@ -33,7 +34,7 @@ int addSwitch(const char* switchName, Func callback) {
 	}
 
 	// no more than 32 characters allowed for a switch name
-	if (strnlen(switchName, 32) == 32) {
+	if (strnlen(switchName, 33) == 33) {
 		return STATUS_FAIL;
 	}
 
@@ -52,8 +53,8 @@ int addSwitch(const char* switchName, Func callback) {
 	switchesC++;
 	callbackC++;
 
-	callbacks = realloc(callbacks, callbackC);
-	switches = realloc(switches, switchesC);
+	callbacks = realloc(callbacks, callbackC * sizeof(Func));
+	switches = realloc(switches, switchesC * sizeof(char**));
 
 	if (callbacks == NULL || switches == NULL) {
 		return STATUS_FAIL;
@@ -65,17 +66,30 @@ int addSwitch(const char* switchName, Func callback) {
 	return STATUS_OK;
 }
 
-void parseArgv(int argc, char** argv) {
+int parseArgv(int argc, char** argv) {
+	bool foundNonSwitch = false;
+	int nonSwitchIndex = -1;
+
 	for (int i = 0; i < argc; i++) {
-		if (strnlen(argv[i], 32) == 32) {
+		if (strnlen(argv[i], 33) == 33) {
 			continue;
 		}
 
+		bool isSwitch = false;
 		for (size_t j = 0; j < switchesC; j++) {
 			if (strncmp(argv[i], switches[j], 32) == 0) {
 				callbacks[j]();
+
+				isSwitch = true;
 				break;
 			}
 		}
+
+		if (!isSwitch && !foundNonSwitch && i != 0) {
+			nonSwitchIndex = i;
+			foundNonSwitch = true;
+		}
 	}
+
+	return nonSwitchIndex;
 }
