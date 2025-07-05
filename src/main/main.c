@@ -3,6 +3,17 @@
 #include <tmplparser.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <stdbool.h>
+
+typedef enum {
+	EXTENDED,
+	MINIMAL,
+	NO_FOLDERS,
+} Structure;
+
+bool g_isC = true;
+bool g_isCPP = false;
+Structure projectStructure = EXTENDED;
 
 static char* getExecutablePath(size_t* len) {
 	char* buffer = malloc(PATH_MAX);
@@ -45,8 +56,26 @@ static void changeWD(void) {
 	free(path);
 }
 
+void setC(void) {
+	g_isC = true;
+	g_isCPP = false;
+}
+
+void setCPP(void) {
+	g_isC = false;
+	g_isCPP = true;
+}
+
+void setExtended(void) {
+	projectStructure = EXTENDED;
+}
+
+void setMinimal(void) {
+	projectStructure = MINIMAL;
+}
+
 void setNoFolders(void) {
-	printf("placeholder\n");
+	projectStructure = NO_FOLDERS;
 }
 
 int main(int argc, char** argv) {
@@ -66,11 +95,19 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	printf("contents: \n%s\n", contents);
+	//printf("contents: \n%s\n", contents);
 
 	free(tmplFile);
 
-	addSwitch("-no-folders", setNoFolders);
-	
-	parseArgv(argc, argv);
+	addSwitch("-c", setC);
+	addSwitch("--cpp", setCPP);
+	addSwitch("--extended", setExtended);
+	addSwitch("--minimal", setMinimal);
+	addSwitch("--no-folders", setNoFolders);
+
+	int nonSwitchIndex = parseArgv(argc, argv);
+
+	printf("current setup:\n c: %i, c++: %i\nproject structure: %i\n", g_isC, g_isCPP, projectStructure);
+	printf("first nonswitch index: %i\n", nonSwitchIndex);
+	if (nonSwitchIndex > 0) printf("first nonswitch argument: %s\n", argv[nonSwitchIndex]);
 }
