@@ -10,6 +10,7 @@ TARGET   := $(BIN_DIR)/cpm
 
 INCLUDES := $(HDR_DIR)
 CC       := gcc
+CPPFLAGS := -D LINUX
 CFLAGS   := -Werror -Wall -Wextra -Wpedantic
 LFLAGS   := 
 
@@ -21,13 +22,13 @@ OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.c,$(OUT_DIR)/%.o,$(LIBS))
 all: $(TARGET) resources
 
 $(TARGET): $(OBJS) $(OBJS_LIBS) | $(ALL_DIRS)
-	$(CC) $(CFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc)) $(LFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc)) $(LFLAGS)
 
 $(OUT_DIR)/%.o:: $(SRC_DIR)/%.c
-	mkdir -p $(@D)/ && $(CC) $(CFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
+	mkdir -p $(@D)/ && $(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
 
 $(OUT_DIR)/%.o:: $(LIBS_DIR)/%.c
-	mkdir -p $(@D)/ && $(CC) $(CFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
+	mkdir -p $(@D)/ && $(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
 
 $(ALL_DIRS):
 	@mkdir -p $@
