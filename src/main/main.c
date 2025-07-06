@@ -12,6 +12,7 @@
 #include <windows.h>
 #endif
 
+#define PRINTLN(input) printf((char*) input); printf("\n")
 
 typedef enum {
 	EXTENDED,
@@ -106,8 +107,47 @@ void setNoFolders(void) {
 	g_projectStructure = NO_FOLDERS;
 }
 
+void printHelp(void) {
+	PRINTLN("CPM v2.0 ------------------------");
+	PRINTLN("usage: cpm <project_name> [options]");
+	PRINTLN(" ");
+	PRINTLN("available options:");
+	PRINTLN("	language options:");
+	PRINTLN("	-c             sets the project's language as C (default)");
+	PRINTLN("	--cpp          sets the project's language as C++");
+	PRINTLN(" ");
+	PRINTLN("	project structure settings:");
+	PRINTLN("	--extended     uses the extended project structure (default)");
+	PRINTLN("	--minimal      uses the minimal project structure");
+	PRINTLN("	--no-folders   uses the no folders project structure");
+	PRINTLN(" ");
+	PRINTLN("	miscellaneous:");
+	PRINTLN("	--help (-h)    prints this screen and exits");
+
+	exit(0);
+}
+
 int main(int argc, char** argv) {
+	if (argc < 2) {
+		printHelp();
+	}
+
 	changeWD();
+
+	addSwitch("-c",           setC);
+	addSwitch("--cpp",        setCPP);
+	addSwitch("--extended",   setExtended);
+	addSwitch("--minimal",    setMinimal);
+	addSwitch("--no-folders", setNoFolders);
+
+	addSwitch("--help",       printHelp);
+	addSwitch("-h",           printHelp);
+
+	int nonSwitchIndex = parseArgv(argc, argv);
+
+	if (nonSwitchIndex == -1) {
+		printHelp();
+	}
 
 	TMPLFile* tmplFile = tmpl_loadFile("resources/templates-no-folders.tmpl");
 
@@ -116,26 +156,17 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	char* contents = tmpl_getContentsOfSection(tmplFile, "makefile", NULL);
+//	char* contents = tmpl_getContentsOfSection(tmplFile, "makefile", NULL);
 
-	if (contents == NULL) {
-		printf("tmpl_getContentsOfSection error\n");
-		return 1;
-	}
+//	if (contents == NULL) {
+//		printf("tmpl_getContentsOfSection error\n");
+//		return 1;
+//	}
 
-	//printf("contents: \n%s\n", contents);
+//	printf("contents: \n%s\n", contents);
 
 	free(tmplFile);
 
-	addSwitch("-c", setC);
-	addSwitch("--cpp", setCPP);
-	addSwitch("--extended", setExtended);
-	addSwitch("--minimal", setMinimal);
-	addSwitch("--no-folders", setNoFolders);
-
-	int nonSwitchIndex = parseArgv(argc, argv);
-
-	printf("current setup:\n c: %i, c++: %i\nproject structure: %i\n", g_isC, g_isCPP, g_projectStructure);
-	printf("first nonswitch index: %i\n", nonSwitchIndex);
-	if (nonSwitchIndex > 0) printf("first nonswitch argument: %s\n", argv[nonSwitchIndex]);
+	// can't procrastinate any longer. gotta do the actual mkdirs and stuff now.
+	// :(
 }
