@@ -128,12 +128,13 @@ void printHelp(void) {
 }
 
 int main(int argc, char** argv) {
+	// technically not required, as parseArgv will return -1 anyway, but it's
+	// a small optimization to avoid allocating any ram for switch storage.
 	if (argc < 2) {
 		printHelp();
 	}
 
-	changeWD();
-
+	// add all switches and flags here
 	addSwitch("-c",           setC);
 	addSwitch("--cpp",        setCPP);
 	addSwitch("--extended",   setExtended);
@@ -149,9 +150,14 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	TMPLFile* tmplFile = tmpl_loadFile("resources/templates-no-folders.tmpl");
+	changeWD();
 
-	if (tmplFile == NULL) {
+	TMPLFile* tmplNoFolders = tmpl_loadFile("resources/templates-no-folders.tmpl");
+	// TODO: add these files
+//	TMPLFile* tmplMinimal = tmpl_loadFile("resources/templates-minimal.tmpl");
+//	TMPLFile* tmplExtended = tmpl_loadFile("resources/templates-extended.tmpl");
+
+	if (tmplNoFolders == NULL) {
 		printf("tmpl_loadFile error\n");
 		return 1;
 	}
@@ -165,7 +171,40 @@ int main(int argc, char** argv) {
 
 //	printf("contents: \n%s\n", contents);
 
-	free(tmplFile);
+	char* mainC;
+	char* mainH;
+	char* makefile;
+	size_t mcLength, mhLength, mkLength;
+
+	switch(g_projectStructure) {
+		case EXTENDED: // TODO: add these
+			mainC = NULL;
+			mainH = NULL;
+			makefile = NULL;
+			break;
+		case MINIMAL: // TODO: add these
+			mainC = NULL;
+			mainH = NULL;
+			makefile = NULL;
+			break;
+		case NO_FOLDERS:
+			mainC = tmpl_getContentsOfSection(tmplNoFolders, "main.c", &mcLength);
+			mainH = tmpl_getContentsOfSection(tmplNoFolders, "main.h", &mhLength);
+			makefile = tmpl_getContentsOfSection(tmplNoFolders, "makefile", &mkLength);
+			break;
+	}
+
+	if (mainC == NULL || mainH == NULL || makefile == NULL) {
+		printf("cpm: ERROR: failed to read from template files\n");
+		return 1;
+	}
+
+	free(tmplNoFolders);
+	// TODO: uncomment these once everything else is done
+//	free(tmplMinimal);
+//	free(tmplExtended);
+
+	printf("%s\n%s\n%s\n", mainC, mainH, makefile);
 
 	// can't procrastinate any longer. gotta do the actual mkdirs and stuff now.
 	// :(
