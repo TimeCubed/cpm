@@ -15,6 +15,8 @@ TMPLFile* tmpl_loadFile(const char* path) {
 	FILE* file = fopen(path, "r");
 
 	if (file == NULL) {
+		free(tmplFile);
+
 		return NULL;
 	}
 
@@ -22,7 +24,9 @@ TMPLFile* tmpl_loadFile(const char* path) {
 	char* contents = malloc(READ_CHUNK);
 
 	if (contents == NULL) {
+		free(tmplFile);
 		fclose(file);
+
 		return NULL;
 	}
 
@@ -34,6 +38,7 @@ TMPLFile* tmpl_loadFile(const char* path) {
 
 			if (tmp == NULL) {
 				free(contents);
+				free(tmplFile);
 				fclose(file);
 
 				perror("realloc fail");
@@ -115,7 +120,6 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	for (size_t i = 0; i < lineCount; i++) {
 		size_t startIndex = lines[i].startIndex;
 		size_t lineLength = lines[i].length;
-		//printf("line: %lu, startIndex: %lu, length: %lu, currChar: %c\n", i, startIndex, lineLength, fileContents[startIndex]);
 
 		if (lineLength < 3) {
 			continue;
