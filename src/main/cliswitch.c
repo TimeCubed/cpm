@@ -53,12 +53,18 @@ int addSwitch(const char* switchName, Func callback) {
 	switchesC++;
 	callbackC++;
 
-	callbacks = realloc(callbacks, callbackC * sizeof(Func));
-	switches = realloc(switches, switchesC * sizeof(char**));
+	Func* tmp1 = realloc(callbacks, callbackC * sizeof(Func));
+	const char** tmp2 = realloc(switches, switchesC * sizeof(char**));
 
-	if (callbacks == NULL || switches == NULL) {
+	if (tmp1 == NULL || tmp2 == NULL) {
+		free(callbacks);
+		free(switches);
+
 		return STATUS_FAIL;
 	}
+
+	callbacks = tmp1;
+	switches = tmp2;
 
 	callbacks[callbackC - 1] = callback;
 	switches[switchesC - 1] = switchName;
@@ -85,7 +91,7 @@ int parseArgv(int argc, char** argv) {
 			}
 		}
 
-		if (!isSwitch && !foundNonSwitch && i != 0) {
+		if (!isSwitch && !foundNonSwitch && i != 0 && argv[i][0] != '-') {
 			nonSwitchIndex = i;
 			foundNonSwitch = true;
 		}
