@@ -1,6 +1,6 @@
-#include "cliswitch.h"
 #include <main.h>
 #include <tmplparser.h>
+#include <cliswitch.h>
 #include <stdbool.h>
 
 #ifdef LINUX
@@ -21,7 +21,6 @@ typedef enum {
 } Structure;
 
 bool g_isC = true;
-bool g_isCPP = false;
 Structure g_projectStructure = EXTENDED;
 
 #ifdef LINUX
@@ -42,57 +41,53 @@ static char* getExecutablePath(size_t* len) {
 
 	return buffer;
 }
+
+static size_t getPathMax(void) {
+	return PATH_MAX;
+}
+
+static char* getCWD(size_t maxLength) {
+	char* buf = malloc(maxLength);
+
+	return getcwd(buf, maxLength);
+}
+
+static int changeWD(char* path) {
+	return chdir(path);
+}
 #endif
+
+// TODO: implement all of this
+// also, paths on windows are different than on linux
+// C:\Users\user\ vs /home/user/
+// be careful of that
 #ifdef WINDOWS
 static char* getExecutablePath(size_t* len) {
 	return NULL;
 }
-#endif
 
-#ifndef LINUX
-#ifndef WINDOWS
-
-static char* getExecutablePath(size_t* len) {
-	*len = 0; // pedantic errors really are pedantic aren't they
-
-	printf("No platform set during compilation. Aborting..\n");
-	exit(1);
+static size_t getPathMax(void) {
+	return MAX_PATH;
 }
 
-#endif
-#endif
+static char* getCWD(size_t maxLength) {
+	char* buf = malloc(maxLength);
 
-static void changeWD(void) {
-	size_t len;
-	char* path = getExecutablePath(&len);
-
-	if (path == NULL) {
-		fprintf(stderr, "ERROR: failed to get executable path\n");
-		exit(1);
-	}
-
-	int lastSlash = 0;
-	for (size_t i = 0; i < len; i++) {
-		if (path[i] == '/') {
-			lastSlash = i;
-		}
-	}
-
-	path[lastSlash + 1] = '\0';
-
-	chdir(path);
-
-	free(path);
+	return _getcwd(buf, maxLength);
 }
+
+static int changeWD(char* path) {
+	return SetCurrentDirectory(path);
+}
+#endif
+
 
 void setC(void) {
 	g_isC = true;
-	g_isCPP = false;
 }
 
 void setCPP(void) {
 	g_isC = false;
-	g_isCPP = true;
 }
 
 void setExtended(void) {
@@ -127,9 +122,23 @@ void printHelp(void) {
 	exit(0);
 }
 
+void setupExtendedStructure(void) {
+
+}
+
+void setupMinimalStructure(void) {
+
+}
+
+void setupNoFoldersStructure(void) {
+
+}
+
 int main(int argc, char** argv) {
 	// technically not required, as parseArgv will return -1 anyway, but it's
 	// a small optimization to avoid allocating any ram for switch storage.
+	// doesn't make it any less unnecessary, but my brain won't let me not do
+	// this.
 	if (argc < 2) {
 		printHelp();
 	}
@@ -144,68 +153,109 @@ int main(int argc, char** argv) {
 	addSwitch("--help",       printHelp);
 	addSwitch("-h",           printHelp);
 
+	if (!g_isC) {
+		printf("cpm: C++ is currently unsupported.\n");
+		return 0;
+	}
+
 	int nonSwitchIndex = parseArgv(argc, argv);
 
+	// no project names given, so we'll quit and print the help menu
 	if (nonSwitchIndex == -1) {
 		printHelp();
 	}
 
-	changeWD();
+	// before changing the current directory to load templates, save the current
+	// working directory, so that we can come back later to create needed files.
+	size_t pathMax = getPathMax();
+	char* cwd = getCWD(pathMax);
 
-	TMPLFile* tmplNoFolders = tmpl_loadFile("resources/templates-no-folders.tmpl");
-	// TODO: add these files
-//	TMPLFile* tmplMinimal = tmpl_loadFile("resources/templates-minimal.tmpl");
-//	TMPLFile* tmplExtended = tmpl_loadFile("resources/templates-extended.tmpl");
+	size_t len;
+	char* path = getExecutablePath(&len);
 
-	if (tmplNoFolders == NULL) {
-		printf("tmpl_loadFile error\n");
+	if (path == NULL) {
+		fprintf(stderr, "cpm: ERROR: failed to get current executable path\n");
 		return 1;
 	}
 
-//	char* contents = tmpl_getContentsOfSection(tmplFile, "makefile", NULL);
+	int lastSlash = 0;
+	for (size_t i = 0; i < len; i++) {
+		if (path[i] == '/' || path[i] == '\\') {
+			lastSlash = i;
+		}
+	}
 
-//	if (contents == NULL) {
-//		printf("tmpl_getContentsOfSection error\n");
-//		return 1;
-//	}
+	path[lastSlash + 1] = '\0';
 
-//	printf("contents: \n%s\n", contents);
+	changeWD(path);
+	free(path);
 
-	char* mainC;
-	char* mainH;
-	char* makefile;
-	size_t mcLength, mhLength, mkLength;
+	TMPLFile* tmplFile;
 
-	switch(g_projectStructure) {
-		case EXTENDED: // TODO: add these
-			mainC = NULL;
-			mainH = NULL;
-			makefile = NULL;
+	switch (g_projectStructure) {
+		case EXTENDED:
+			tmplFile = tmpl_loadFile("resources/templates-extended-c.tmpl");
+
+			if (tmplFile == NULL) {
+				printf("cpm: ERROR: failed to load templates for extended project structure\n");
+				return 1;
+			}
+
 			break;
-		case MINIMAL: // TODO: add these
-			mainC = NULL;
-			mainH = NULL;
-			makefile = NULL;
+		case MINIMAL:
+			tmplFile = tmpl_loadFile("resources/templates-minimal-c.tmpl");
+
+			if (tmplFile == NULL) {
+				printf("cpm: ERROR: failed to load templates for minimal project structure\n");
+				return 1;
+			}
+
 			break;
 		case NO_FOLDERS:
-			mainC = tmpl_getContentsOfSection(tmplNoFolders, "main.c", &mcLength);
-			mainH = tmpl_getContentsOfSection(tmplNoFolders, "main.h", &mhLength);
-			makefile = tmpl_getContentsOfSection(tmplNoFolders, "makefile", &mkLength);
+			tmplFile = tmpl_loadFile("resources/templates-no-folders-c.tmpl");
+
+			if (tmplFile == NULL) {
+				printf("cpm: ERROR: failed to load templates for no-folders project structure\n");
+				return 1;
+			}
+
 			break;
+		default:
+			printf("cpm: ERROR: unknown error occured\n");
+			return -1;
 	}
+
+	// TODO: add c++ templates
+
+	size_t mcLength, mhLength, mkLength;
+	char* mainC    = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
+	char* mainH    = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
+	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
 
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
 		printf("cpm: ERROR: failed to read from template files\n");
 		return 1;
 	}
 
-	free(tmplNoFolders);
-	// TODO: uncomment these once everything else is done
-//	free(tmplMinimal);
-//	free(tmplExtended);
+	free(tmplFile);
+	
+	changeWD(cwd);
+	free(cwd);
 
 	printf("%s\n%s\n%s\n", mainC, mainH, makefile);
 
-	// can't procrastinate any longer. gotta do the actual mkdirs and stuff now.
-	// :(
+	// switches look so awful oh my god
+	if (g_isC) {
+		switch (g_projectStructure) {
+			case EXTENDED:
+				setupExtendedStructure();
+				break;
+			case MINIMAL:
+				setupMinimalStructure();
+				break;
+			case NO_FOLDERS:
+				setupNoFoldersStructure();
+				break;
+		}
+	}
 }
