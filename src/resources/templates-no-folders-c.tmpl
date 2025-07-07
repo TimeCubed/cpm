@@ -1,0 +1,41 @@
+[main.c]
+#include <main.h>
+
+int main(void) {
+	printf("Hello, world!\n");
+}
+
+[main.h]
+#ifndef MAIN
+#define MAIN
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#endif
+
+[makefile]
+# No folders template makefile
+
+TARGET   := example
+CC       := gcc
+CFLAGS   := -Wextra
+LFLAGS   := 
+INCLUDES := ./
+CPPFLAGS := 
+
+SOURCES   := $(shell find ./ -type f -name '*.c')
+LIBS      := 
+OBJS      := $(patsubst %.c,%.o,$(SOURCES))
+OBJS_LIBS := $(patsubst %.c,%.o,$(LIBS))
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS) $(OBJS_LIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc))
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
+
+clean:
+	rm -f $(TARGET) $(OBJS) $(OBJS_LIBS)
