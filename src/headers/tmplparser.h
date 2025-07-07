@@ -28,6 +28,8 @@ TMPLFile* tmpl_loadFile(const char* path);
  *
  * @param tmplFile The .tmpl file.
  * @param sectionName The name of the section.
+ * @param length The int pointed to by this parameter is set to the length of
+ *               the section's contents.
  *
  * @return The contents of the section requested, `NULL` if not found.
  */
