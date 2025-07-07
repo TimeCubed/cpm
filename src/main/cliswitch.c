@@ -34,7 +34,7 @@ int addSwitch(const char* switchName, Func callback) {
 	}
 
 	// no more than 32 characters allowed for a switch name
-	if (strnlen(switchName, 33) == 33) {
+	if (strnlen(switchName, 32) == 32) {
 		return STATUS_FAIL;
 	}
 
@@ -77,7 +77,7 @@ int parseArgv(int argc, char** argv) {
 	int nonSwitchIndex = -1;
 
 	for (int i = 0; i < argc; i++) {
-		if (strnlen(argv[i], 33) == 33) {
+		if (strnlen(argv[i], 32) == 32) {
 			continue;
 		}
 
