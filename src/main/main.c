@@ -1,18 +1,10 @@
 #include <main.h>
 #include <tmplparser.h>
 #include <cliswitch.h>
+#include <crossplatform.h>
 #include <stdbool.h>
 
-#ifdef LINUX
-#include <unistd.h>
-#include <linux/limits.h>
-#endif
-
-#ifdef WINDOWS
-#include <windows.h>
-#endif
-
-#define PRINTLN(input) printf((char*) input); printf("\n")
+#define PRINTLN(input) printf(input); printf("\n")
 
 typedef enum {
 	EXTENDED,
@@ -22,65 +14,6 @@ typedef enum {
 
 bool g_isC = true;
 Structure g_projectStructure = EXTENDED;
-
-#ifdef LINUX
-static char* getExecutablePath(size_t* len) {
-	char* buffer = malloc(PATH_MAX);
-
-	*len = readlink("/proc/self/exe", buffer, PATH_MAX - 1);
-
-	if (*len == -1ul) {
-		fprintf(stderr, "ERROR: couldn't get executable path\n");
-
-		free(buffer);
-
-		return NULL;
-	}
-
-	buffer[*len - 1] = '\0';
-
-	return buffer;
-}
-
-static size_t getPathMax(void) {
-	return PATH_MAX;
-}
-
-static char* getCWD(size_t maxLength) {
-	char* buf = malloc(maxLength);
-
-	return getcwd(buf, maxLength);
-}
-
-static int changeWD(char* path) {
-	return chdir(path);
-}
-#endif
-
-// TODO: implement all of this
-// also, paths on windows are different than on linux
-// C:\Users\user\ vs /home/user/
-// be careful of that
-#ifdef WINDOWS
-static char* getExecutablePath(size_t* len) {
-	return NULL;
-}
-
-static size_t getPathMax(void) {
-	return MAX_PATH;
-}
-
-static char* getCWD(size_t maxLength) {
-	char* buf = malloc(maxLength);
-
-	return _getcwd(buf, maxLength);
-}
-
-static int changeWD(char* path) {
-	return SetCurrentDirectory(path);
-}
-#endif
-
 
 void setC(void) {
 	g_isC = true;
@@ -170,22 +103,12 @@ int main(int argc, char** argv) {
 	size_t pathMax = getPathMax();
 	char* cwd = getCWD(pathMax);
 
-	size_t len;
-	char* path = getExecutablePath(&len);
+	char* path = getExecutablePath(NULL);
 
 	if (path == NULL) {
-		fprintf(stderr, "cpm: ERROR: failed to get current executable path\n");
+		printf("cpm: ERROR: failed to get current executable path\n");
 		return 1;
 	}
-
-	int lastSlash = 0;
-	for (size_t i = 0; i < len; i++) {
-		if (path[i] == '/' || path[i] == '\\') {
-			lastSlash = i;
-		}
-	}
-
-	path[lastSlash + 1] = '\0';
 
 	changeWD(path);
 	free(path);
@@ -238,7 +161,7 @@ int main(int argc, char** argv) {
 	}
 
 	free(tmplFile);
-	
+
 	changeWD(cwd);
 	free(cwd);
 
@@ -258,4 +181,8 @@ int main(int argc, char** argv) {
 				break;
 		}
 	}
+
+	free(mainC);
+	free(mainH);
+	free(makefile);
 }
