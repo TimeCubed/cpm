@@ -1,5 +1,4 @@
 #include <main.h>
-#include <errno.h>
 #include <string.h>
 #include <c_string.h>
 #include <crossplatform.h>
@@ -16,9 +15,12 @@ static int createFile(char* path, String contents) {
 
 	if (ret < contents.length) {
 		printf("ERROR: failed to write to file \'%s\'\n", path);
+
+		fclose(file);
 		return STATUS_FAIL;
 	}
 
+	fclose(file);
 	return STATUS_OK;
 }
 
