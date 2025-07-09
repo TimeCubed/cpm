@@ -11,9 +11,22 @@ yet any support for windows, which I'm planning to add (no, there won't be any m
 I have a lot of features planned for CPM, including a rework of how it generates projects so it's
 more extensible and configurable. For now, here's what's planned to get the current project working:
 
-- [ ] Finish windows-specific function implementations 
-- [ ] Add checks for user-created .tmpl files at `~/.config/cpm/templates/` 
-    - [ ] Load user-created .tmpl files at the config directory if they exist, and use them to make projects 
-    - [ ] If no user-created files are found, load default templates at `<cpm_dir>/resources/` 
-- [ ] Test CPM for windows 
-- [ ] Iron out any memory leaks or whatnot left in the code 
+- [ ] Functionality:
+    - [ ] Add windows support
+        - [ ] Finish windows-specific function implementations
+        - [ ] Test CPM for windows
+    - [ ] Add C++ support
+    - [ ] Add checks for user-created .tmpl files at `~/.config/cpm/templates/`
+        - [ ] Load user-created .tmpl files at the config directory if they exist, and use them to make projects
+        - [ ] If no user-created files are found, load default templates at `<cpm_dir>/resources/`
+- [ ] Polish:
+    - [ ] Iron out any memory leaks or whatnot left in the code
+    - [ ] Polish up CLI arguments parser (cliswitch.c)
+        - [ ] Add more checks for invalid switches, multiple project names, etc.
+        - [ ] Add more feedback to the user when invalid arguments are given
+    - [ ] Add more user feedback on errors
+    - [ ] Code base polish
+        - [ ] Add some comments around non-trivial code
+        - [ ] Polish up readability (if needed)
+- [ ] Extras:
+    - [ ] Add validation for created files, checking if their contents match what was loaded (likely unnecessary)
