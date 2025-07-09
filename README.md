@@ -1,7 +1,18 @@
 # CPM
-CPM is a small tool I made in C to quickly make C/C++ projects. When given a project name, it'll automatically create a directory containing a main file, a header file and a makefile all populated with template code.
-Also, the name is a shorthand for "C Project Maker". It might also be vulnerable to buffer overflows, so be careful I guess.
+CPM is a small tool I made in C to quickly make C/C++ projects. It has support for multiple project
+structure types (extended, minimal or no folders), and (in the future! see [todos](https://github.com/TimeCubed/cpm/blob/main/README.md#Todos)) can generate
+template files based on user-configurable .tmpl files.
 
-Feel free to laugh at my horrible C code.
+Note: while the current src *does work*, it's currently in a "minimum viable product" state, meaning
+a lot of stuff is still not done.
 
-NOTE: current src is not functional yet, I'm currently remaking CPM to add new features to it. use the release version
+# Todos
+I have a lot of features planned for CPM, including a rework of how it generates projects so it's
+more extensible and configurable. For now, here's what's planned to get the current project working:
+
+- [ ] Finish windows-specific function implementations 
+- [ ] Add checks for user-created .tmpl files at `~/.config/cpm/templates/` 
+    - [ ] Load user-created .tmpl files at the config directory if they exist, and use them to make projects 
+    - [ ] If no user-created files are found, load default templates at `<cpm_dir>/resources/` 
+- [ ] Test CPM for windows 
+- [ ] Iron out any memory leaks or whatnot left in the code 
