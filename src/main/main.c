@@ -1,16 +1,15 @@
+#include "errors.h"
 #include <main.h>
-#include <tmplparser.h>
-#include <cliswitch.h>
-#include <crossplatform.h>
+#include <string.h>
 #include <stdbool.h>
+#include <builder.h>
+#include <c_string.h>
+#include <cliswitch.h>
+#include <tmplparser.h>
+#include <confighandler.h>
+#include <crossplatform.h>
 
 #define PRINTLN(input) printf(input); printf("\n")
-
-typedef enum {
-	EXTENDED,
-	MINIMAL,
-	NO_FOLDERS,
-} Structure;
 
 bool g_isC = true;
 Structure g_projectStructure = EXTENDED;
@@ -55,17 +54,6 @@ void printHelp(void) {
 	exit(0);
 }
 
-void setupExtendedStructure(void) {
-
-}
-
-void setupMinimalStructure(void) {
-
-}
-
-void setupNoFoldersStructure(void) {
-
-}
 
 int main(int argc, char** argv) {
 	// technically not required, as parseArgv will return -1 anyway, but it's
@@ -113,76 +101,26 @@ int main(int argc, char** argv) {
 	changeWD(path);
 	free(path);
 
-	TMPLFile* tmplFile;
+	ProjectConfig config = config_init(
+		cstring_init(argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 64)),
+		g_isC ? C : CPP,
+		g_projectStructure
+	);
 
-	switch (g_projectStructure) {
-		case EXTENDED:
-			tmplFile = tmpl_loadFile("resources/templates-extended-c.tmpl");
+	config_loadFiles(&config);
 
-			if (tmplFile == NULL) {
-				printf("cpm: ERROR: failed to load templates for extended project structure\n");
-				return 1;
-			}
-
-			break;
-		case MINIMAL:
-			tmplFile = tmpl_loadFile("resources/templates-minimal-c.tmpl");
-
-			if (tmplFile == NULL) {
-				printf("cpm: ERROR: failed to load templates for minimal project structure\n");
-				return 1;
-			}
-
-			break;
-		case NO_FOLDERS:
-			tmplFile = tmpl_loadFile("resources/templates-no-folders-c.tmpl");
-
-			if (tmplFile == NULL) {
-				printf("cpm: ERROR: failed to load templates for no-folders project structure\n");
-				return 1;
-			}
-
-			break;
-		default:
-			printf("cpm: ERROR: unknown error occured\n");
-			return -1;
-	}
-
-	// TODO: add c++ templates
-
-	size_t mcLength, mhLength, mkLength;
-	char* mainC    = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
-	char* mainH    = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
-	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
-
-	if (mainC == NULL || mainH == NULL || makefile == NULL) {
-		printf("cpm: ERROR: failed to read from template files\n");
+	if (config_checkError() == STATUS_FAIL) {
+		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
-
-	free(tmplFile);
 
 	changeWD(cwd);
 	free(cwd);
 
-	printf("%s\n%s\n%s\n", mainC, mainH, makefile);
-
-	// switches look so awful oh my god
-	if (g_isC) {
-		switch (g_projectStructure) {
-			case EXTENDED:
-				setupExtendedStructure();
-				break;
-			case MINIMAL:
-				setupMinimalStructure();
-				break;
-			case NO_FOLDERS:
-				setupNoFoldersStructure();
-				break;
-		}
+	if (buildProject(config) == STATUS_FAIL) {
+		printf("cpm: ERROR: failed to create project\n");
+		return 1;
 	}
 
-	free(mainC);
-	free(mainH);
-	free(makefile);
+	config_free(config);
 }
