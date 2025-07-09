@@ -5,6 +5,7 @@
 
 #ifdef LINUX
 #include <unistd.h>
+#include <sys/stat.h>
 #include <linux/limits.h>
 #endif
 
@@ -16,5 +17,6 @@ char* getExecutablePath(size_t* len);
 size_t getPathMax(void);
 char* getCWD(size_t maxLength);
 int changeWD(char* path);
+int makeDirectory(char* path, int mode);
 
 #endif

@@ -1,4 +1,6 @@
 #include <main.h>
+#include <errno.h>
+#include <string.h>
 #include <crossplatform.h>
 
 #ifdef LINUX
@@ -48,6 +50,15 @@ char* getCWD(size_t maxLength) {
 int changeWD(char* path) {
 	return chdir(path);
 }
+
+int makeDirectory(char* path, int mode) {
+	if (mkdir(path, mode) != 0) {
+		printf("ERROR: could not create directory \'%s\': %s\n", path, strerror(errno));
+		return STATUS_FAIL;
+	}
+
+	return STATUS_OK;
+}
 #endif
 
 // TODO: implement all of this
@@ -55,21 +66,25 @@ int changeWD(char* path) {
 // C:\Users\user\ vs /home/user/
 // be careful of that
 #ifdef WINDOWS
-static char* getExecutablePath(size_t* len) {
+char* getExecutablePath(size_t* len) {
 	return NULL;
 }
 
-static size_t getPathMax(void) {
+size_t getPathMax(void) {
 	return MAX_PATH;
 }
 
-static char* getCWD(size_t maxLength) {
+char* getCWD(size_t maxLength) {
 	char* buf = malloc(maxLength);
 
 	return _getcwd(buf, maxLength);
 }
 
-static int changeWD(char* path) {
+int changeWD(char* path) {
 	return SetCurrentDirectory(path);
+}
+
+int makeDirectory(char* path, int _unused) {
+	return _mkdir(path);
 }
 #endif
