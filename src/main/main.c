@@ -48,10 +48,16 @@ void printHelp(void) {
 	PRINTLN(" ");
 	PRINTLN("	miscellaneous:");
 	PRINTLN("	--help (-h)    prints this screen and exits");
+	PRINTLN("	--version (-v) prints the current version of CPM running");
 
 	exit(0);
 }
 
+void printVersion(void) {
+	PRINTLN("CPM v2.0");
+
+	exit(0);
+}
 
 int main(int argc, char** argv) {
 	// technically not required, as parseArgv will return -1 anyway, but it's
@@ -71,6 +77,8 @@ int main(int argc, char** argv) {
 
 	addSwitch("--help",       printHelp);
 	addSwitch("-h",           printHelp);
+	addSwitch("--version",    printVersion);
+	addSwitch("-v",           printVersion);
 
 	if (!g_isC) {
 		printf("cpm: C++ is currently unsupported.\n");
