@@ -78,6 +78,7 @@ int parseArgv(int argc, char** argv) {
 
 	for (int i = 1; i < argc; i++) {
 		if (strnlen(argv[i], 32) == 32) {
+			printf("cpm: WARN: argument %s is longer than 32 characters, skipping\n", argv[i]);
 			continue;
 		}
 
@@ -98,11 +99,13 @@ int parseArgv(int argc, char** argv) {
 			continue;
 		}
 
+		// invalid switch
 		if (!isSwitch && argv[i][0] == '-') {
 			printf("cpm: ERROR: invalid argument given at position %i: %s\n", i, argv[i]);
 			return -1;
 		}
 
+		// second project name
 		if (!isSwitch && foundNonSwitch) {
 			printf("cpm: ERROR: multiple project names given\n");
 			return -1;
