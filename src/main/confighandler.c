@@ -33,9 +33,10 @@ void config_loadFiles(ProjectConfig* config) {
 
 	switch (config->projectStructure) {
 		case EXTENDED:
-			tmplFile = tmpl_loadFile("templates-extended.tmpl");
+			tmplFile = tmpl_loadFile("c/templates-extended.tmpl");
 
 			if (tmplFile) {
+				printf("cpm: found user config for extended structure\n");
 				break;
 			}
 
@@ -52,9 +53,10 @@ void config_loadFiles(ProjectConfig* config) {
 
 			break;
 		case MINIMAL:
-			tmplFile = tmpl_loadFile("templates-minimal.tmpl");
+			tmplFile = tmpl_loadFile("c/templates-minimal.tmpl");
 
 			if (tmplFile) {
+				printf("cpm: found user config for minimal structure\n");
 				break;
 			}
 
@@ -71,9 +73,10 @@ void config_loadFiles(ProjectConfig* config) {
 
 			break;
 		case NO_FOLDERS:
-			tmplFile = tmpl_loadFile("templates-no-folders.tmpl");
+			tmplFile = tmpl_loadFile("c/templates-no-folders.tmpl");
 
 			if (tmplFile) {
+				printf("cpm: found user config for no-folders structure\n");
 				break;
 			}
 
@@ -100,7 +103,15 @@ void config_loadFiles(ProjectConfig* config) {
 	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
 
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
-		printf("ERROR: failed to read from template files\n");
+		printf("ERROR: failed to read from template files: ");
+
+		if (mainC == NULL) {
+			printf("no main.c section in file\n");
+		} else if (mainH == NULL) {
+			printf("no main.h section in file\n");
+		} else if (makefile == NULL) {
+			printf("no makefile section in file\n");
+		}
 
 		free(tmplFile);
 

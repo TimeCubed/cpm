@@ -65,7 +65,7 @@ char* getHomeDir(void) {
 }
 
 char* getConfigDir(void) {
-	return ".config/cpm/templates/c/";
+	return ".config/cpm/templates/";
 }
 #endif
 
