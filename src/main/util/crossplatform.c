@@ -59,6 +59,14 @@ int makeDirectory(char* path, int mode) {
 
 	return STATUS_OK;
 }
+
+char* getHomeDir(void) {
+	return getenv("HOME");
+}
+
+char* getConfigDir(void) {
+	return ".config/cpm/templates/c/";
+}
 #endif
 
 // TODO: implement all of this

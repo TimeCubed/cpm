@@ -18,5 +18,7 @@ size_t getPathMax(void);
 char* getCWD(size_t maxLength);
 int changeWD(char* path);
 int makeDirectory(char* path, int mode);
+char* getHomeDir(void);
+char* getConfigDir(void);
 
 #endif
