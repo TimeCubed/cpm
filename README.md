@@ -53,10 +53,9 @@ own templates without having to add '\n's everywhere or something like that. If 
 that fits my requirements, I'll probably use that instead, since writing a custom parser for a
 custom file format involves a lot more stuff than what I'm doing right now.
 
-This todo-list here involves most of the stuff I want to do in a future v3 release, but this may
-have more stuff added to it later, and is definitely more of an overview of the changes I want,
-rather than an in-depth technical todo-list, as it's for the future and as such is a future problem
-for a future me to work out the details.
+This todo-list is more of a future roadmap rather than a fully in-depth technical breakdown of what
+needs to be changed (even if it seems detailed), and is very much a "far into the future" kind of
+thing. It's for a 'v3', meaning a 'v2' is supposed to happen first.
 
 - [ ] Rework CLI arguments parser (or maybe use getopt?)
     - [ ] Add a way to accept a language as an input
