@@ -18,10 +18,10 @@ more extensible and configurable. For now, here's what's planned to get the curr
         - [ ] Finish windows-specific function implementations
         - [ ] Test CPM for windows
     - [ ] Add C++ support
-    - [ ] Add checks for user-created .tmpl files
-        - [ ] Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files
-        - [ ] Load user-created .tmpl files at the config directory if they exist, and use them to make projects
-        - [ ] If no user-created files are found, load default templates at `<cpm_install_dir>/resources/` (or `<cpm_install_dir>\resources\` for windows)
+    - [x] Add checks for user-created .tmpl files
+        - [x] Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files
+        - [x] Load user-created .tmpl files at the config directory if they exist, and use them to make projects
+        - [x] If no user-created files are found, load default templates at `<cpm_install_dir>/resources/` (or `<cpm_install_dir>\resources\` for windows)
 - [ ] Polish:
     - [ ] Iron out any memory leaks or whatnot left in the code
     - [ ] Polish up CLI arguments parser (cliswitch.c)
