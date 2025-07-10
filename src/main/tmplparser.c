@@ -140,6 +140,7 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	free(lines);
 
 	if (!foundSection) {
+		printf("ERROR: failed to read from template file: section not found: %s\n", sectionName);
 		return NULL;
 	}
 
