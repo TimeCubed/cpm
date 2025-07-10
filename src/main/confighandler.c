@@ -103,16 +103,6 @@ void config_loadFiles(ProjectConfig* config) {
 	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
 
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
-		printf("ERROR: failed to read from template files: ");
-
-		if (mainC == NULL) {
-			printf("no main.c section in file\n");
-		} else if (mainH == NULL) {
-			printf("no main.h section in file\n");
-		} else if (makefile == NULL) {
-			printf("no makefile section in file\n");
-		}
-
 		free(tmplFile);
 
 		m_error = STATUS_FAIL;
