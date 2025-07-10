@@ -76,7 +76,7 @@ int parseArgv(int argc, char** argv) {
 	bool foundNonSwitch = false;
 	int nonSwitchIndex = -1;
 
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		if (strnlen(argv[i], 32) == 32) {
 			continue;
 		}
@@ -91,9 +91,21 @@ int parseArgv(int argc, char** argv) {
 			}
 		}
 
-		if (!isSwitch && !foundNonSwitch && i != 0 && argv[i][0] != '-') {
+		if (!isSwitch && !foundNonSwitch && argv[i][0] != '-') {
 			nonSwitchIndex = i;
 			foundNonSwitch = true;
+
+			continue;
+		}
+
+		if (!isSwitch && argv[i][0] == '-') {
+			printf("cpm: ERROR: invalid argument given at position %i: %s\n", i, argv[i]);
+			return -1;
+		}
+
+		if (!isSwitch && foundNonSwitch) {
+			printf("cpm: ERROR: multiple project names given\n");
+			return -1;
 		}
 	}
 
