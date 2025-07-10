@@ -3,6 +3,7 @@
 #include <c_string.h>
 #include <cliswitch.h>
 #include <tmplparser.h>
+#include <crossplatform.h>
 #include <confighandler.h>
 
 int m_error = 0;
@@ -22,8 +23,25 @@ ProjectConfig config_init(String name, Language language, Structure projectStruc
 void config_loadFiles(ProjectConfig* config) {
 	TMPLFile* tmplFile;
 
+	char* cwd = getCWD(getPathMax());
+
+	char* homeDir = getHomeDir();
+	char* configDir = getConfigDir();
+
+	changeWD(homeDir);
+	changeWD(configDir);
+
 	switch (config->projectStructure) {
 		case EXTENDED:
+			tmplFile = tmpl_loadFile("templates-extended.tmpl");
+
+			if (tmplFile) {
+				break;
+			}
+
+			changeWD(cwd);
+			free(cwd);
+
 			tmplFile = tmpl_loadFile("resources/c/templates-extended.tmpl");
 
 			if (tmplFile == NULL) {
@@ -34,6 +52,15 @@ void config_loadFiles(ProjectConfig* config) {
 
 			break;
 		case MINIMAL:
+			tmplFile = tmpl_loadFile("templates-minimal.tmpl");
+
+			if (tmplFile) {
+				break;
+			}
+
+			changeWD(cwd);
+			free(cwd);
+
 			tmplFile = tmpl_loadFile("resources/c/templates-minimal.tmpl");
 
 			if (tmplFile == NULL) {
@@ -44,6 +71,15 @@ void config_loadFiles(ProjectConfig* config) {
 
 			break;
 		case NO_FOLDERS:
+			tmplFile = tmpl_loadFile("templates-no-folders.tmpl");
+
+			if (tmplFile) {
+				break;
+			}
+
+			changeWD(cwd);
+			free(cwd);
+
 			tmplFile = tmpl_loadFile("resources/c/templates-no-folders.tmpl");
 
 			if (tmplFile == NULL) {
