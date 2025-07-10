@@ -34,7 +34,6 @@ void setNoFolders(void) {
 }
 
 void printHelp(void) {
-	PRINTLN("CPM v2.0 ------------------------");
 	PRINTLN("usage: cpm <project_name> [options]");
 	PRINTLN(" ");
 	PRINTLN("available options:");
