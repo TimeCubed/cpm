@@ -18,24 +18,25 @@ more extensible and configurable. For now, here's what's planned to get the curr
         - [ ] Finish windows-specific function implementations
         - [ ] Test CPM for windows
     - [ ] Add C++ support
-    - [x] Add checks for user-created .tmpl files
-        - [x] Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files
-        - [x] Load user-created .tmpl files at the config directory if they exist, and use them to make projects
-        - [x] If no user-created files are found, load default templates at `<cpm_install_dir>/resources/` (or `<cpm_install_dir>\resources\` for windows)
+    - [x] ~~Add checks for user-created .tmpl files~~
+        - [x] ~~Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files~~
+        - [x] ~~Load user-created .tmpl files at the config directory if they exist, and use them to make projects~~
+        - [x] ~~If no user-created files are found, load default templates at `<cpm_install_dir>/resources/` (or `<cpm_install_dir>\resources\` for windows)~~
 - [ ] Polish:
     - [ ] Iron out any memory leaks or whatnot left in the code
-    - [ ] Polish up CLI arguments parser (cliswitch.c)
-        - [ ] Add more checks for invalid switches, multiple project names, etc.
-        - [ ] Add more feedback to the user when invalid arguments are given
-    - [ ] Polish up .tmpl parser (tmplparser.c)
-        - [ ] Syntax checking (currently only invalid sections apply here)
-        - [ ] User feedback when a syntax error is found, or when a section isn't found
+    - [x] ~~Polish up CLI arguments parser (cliswitch.c)~~
+        - [x] ~~Add more checks for invalid switches, multiple project names, etc.~~
+        - [x] ~~Add more feedback to the user when invalid arguments are given~~
+    - [x] ~~Polish up .tmpl parser (tmplparser.c)~~
+        - [x] ~~Syntax checking (currently only invalid sections apply here)~~
+        - [x] ~~User feedback when a syntax error is found, or when a section isn't found~~
     - [ ] Add more user feedback on errors
     - [ ] Code base polish
         - [ ] Add some comments around non-trivial code
         - [ ] Polish up readability (if needed)
-- [ ] Extras:
-    - [ ] Add validation for created files, checking if their contents match what was loaded (likely unnecessary)
+- [ ] Extras: (likely unnecessary)
+    - [ ] Add validation for created files, checking if their contents match what was loaded
+    - [ ] Unit tests
 
 ## Future v3 plans
 
