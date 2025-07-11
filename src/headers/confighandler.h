@@ -2,6 +2,7 @@
 #define CONFIG_HANDLER
 
 #include <main.h>
+#include <stdbool.h>
 #include <c_string.h>
 
 typedef enum {
@@ -19,6 +20,8 @@ typedef struct {
 	String name;
 	Language language;
 	Structure projectStructure;
+
+	bool defaultTemplates;
 
 	// hardcoding the files for the project is likely a bad idea if I want to
 	// support other languages in the future, but it's also the easiest method 
@@ -44,10 +47,11 @@ typedef struct {
  * @param name The project name.
  * @param language The project's language.
  * @param projectStructure The project's structure.
+ * @param defaultTemplates Whether to force use default templates or use user-created templates if they exist.
  *
  * @return A `ProjectConfig` object allocated on the stack.
  */
-ProjectConfig config_init(String name, Language language, Structure projectStructure);
+ProjectConfig config_init(String name, Language language, Structure projectStructure, bool defaultTemplates);
 
 /**
  * Loads all files necessary for the current configuration.
