@@ -7,8 +7,6 @@
 #include <crossplatform.h>
 #include <confighandler.h>
 
-int m_error = 0;
-
 // evil object oriented programming constructor? IN MY C??
 // IMPOSSIBLE
 ProjectConfig config_init(String name, Language language, Structure projectStructure, bool defaultTemplates) {
@@ -22,7 +20,7 @@ ProjectConfig config_init(String name, Language language, Structure projectStruc
 	return projectConfig;
 }
 
-void config_loadFiles(ProjectConfig* config) {
+int config_loadFiles(ProjectConfig* config) {
 	TMPLFile* tmplFile = NULL;
 
 	char* cwd = getCWD(getPathMax());
@@ -49,6 +47,9 @@ void config_loadFiles(ProjectConfig* config) {
 			userTemplatePath = "c/templates-no-folders.tmpl";
 			defaultTemplatePath = "resources/c/templates-no-folders.tmpl";
 			break;
+		default:
+			printf("cpm: ERROR: unknown error occurred\n");
+			return STATUS_FAIL;
 	}
 
 	if (!config->defaultTemplates) {
@@ -65,8 +66,7 @@ void config_loadFiles(ProjectConfig* config) {
 
 			free(cwd);
 
-			m_error = STATUS_FAIL;
-			return;
+			return STATUS_FAIL;
 		}
 	} else {
 		printf("cpm: found user config\n");
@@ -82,8 +82,7 @@ void config_loadFiles(ProjectConfig* config) {
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
 		free(tmplFile);
 
-		m_error = STATUS_FAIL;
-		return;
+		return STATUS_FAIL;
 	}
 
 	config->mainC    = cstring_init(mainC, mcLength);
@@ -92,18 +91,11 @@ void config_loadFiles(ProjectConfig* config) {
 
 	free(tmplFile);
 
-	m_error = STATUS_OK;
-	return;
+	return STATUS_OK;
 }
 
 void config_free(ProjectConfig config) {
 	if (config.mainC.contents != NULL) free(config.mainC.contents);
 	if (config.mainH.contents != NULL) free(config.mainH.contents);
 	if (config.makefile.contents != NULL) free(config.makefile.contents);
-
-	m_error = STATUS_OK;
-}
-
-int config_checkError(void) {
-	return m_error;
 }

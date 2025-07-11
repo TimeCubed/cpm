@@ -57,8 +57,10 @@ ProjectConfig config_init(String name, Language language, Structure projectStruc
  * Loads all files necessary for the current configuration.
  *
  * @param config A pointer to the project's configuration.
+ *
+ * @return `STATUS_OK` if successful, `STATUS_FAIL` otherwise.
  */
-void config_loadFiles(ProjectConfig* config);
+int config_loadFiles(ProjectConfig* config);
 
 /**
  * Frees all strings stored inside `config`.
@@ -66,12 +68,5 @@ void config_loadFiles(ProjectConfig* config);
  * @param config The configuration to free.
  */
 void config_free(ProjectConfig config);
-
-/**
- * Returns the error code of the last run config handler function.
- *
- * @return `STATUS_OK` if ok, `STATUS_FAIL` otherwise.
- */
-int config_checkError(void);
 
 #endif
