@@ -9,6 +9,8 @@ static int createFile(char* path, String contents) {
 	
 	if (file == NULL) {
 		printf("ERROR: failed to open file \'%s\'\n", path);
+
+		return STATUS_FAIL;
 	}
 
 	size_t ret = fwrite(contents.contents, sizeof(char), contents.length, file);

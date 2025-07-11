@@ -54,10 +54,17 @@ int addSwitch(const char* switchName, Func callback) {
 	callbackC++;
 
 	Func* tmp1 = realloc(callbacks, callbackC * sizeof(Func));
+
+	if (tmp1 == NULL) {
+		free(callbacks);
+
+		return STATUS_FAIL;
+	}
+
 	const char** tmp2 = realloc(switches, switchesC * sizeof(char**));
 
-	if (tmp1 == NULL || tmp2 == NULL) {
-		free(callbacks);
+	if (tmp2 == NULL) {
+		if (tmp1 != NULL) free(tmp1);
 		free(switches);
 
 		return STATUS_FAIL;
