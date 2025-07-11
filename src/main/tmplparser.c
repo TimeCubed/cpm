@@ -120,15 +120,10 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	// function will miss the last line and not save it properly.
 	// this accounts for that by saving that data anyway, since we always leave
 	// enough space for 1 more line.
-	//
-	// importantly, this also ends up leaving an empty line if the string *was*
-	// terminated by a newline + null byte, which may lead to problems down the
-	// line if this implementation changes, as some code might depend on that 
-	// extra line existing in the buffer.
 	lines[lnCount].length = lineLength - 1;
 	lines[lnCount].startIndex = i - lineLength + 1;
 
-	if (lineCount) *lineCount = lnCount;
+	if (lineCount) *lineCount = ++lnCount;
 	return lines;
 }
 
