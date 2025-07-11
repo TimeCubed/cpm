@@ -1,3 +1,4 @@
+#include "errors.h"
 #include <main.h>
 #include <stdbool.h>
 #include <c_string.h>
@@ -10,18 +11,19 @@ int m_error = 0;
 
 // evil object oriented programming constructor? IN MY C??
 // IMPOSSIBLE
-ProjectConfig config_init(String name, Language language, Structure projectStructure) {
+ProjectConfig config_init(String name, Language language, Structure projectStructure, bool defaultTemplates) {
 	ProjectConfig projectConfig = {
 		.name = name,
 		.language = language,
 		.projectStructure = projectStructure,
+		.defaultTemplates = defaultTemplates,
 	};
 
 	return projectConfig;
 }
 
 void config_loadFiles(ProjectConfig* config) {
-	TMPLFile* tmplFile;
+	TMPLFile* tmplFile = NULL;
 
 	char* cwd = getCWD(getPathMax());
 
@@ -31,71 +33,46 @@ void config_loadFiles(ProjectConfig* config) {
 	changeWD(homeDir);
 	changeWD(configDir);
 
+	char* userTemplatePath;
+	char* defaultTemplatePath;
+
 	switch (config->projectStructure) {
 		case EXTENDED:
-			tmplFile = tmpl_loadFile("c/templates-extended.tmpl");
-
-			if (tmplFile) {
-				printf("cpm: found user config for extended structure\n");
-				break;
-			}
-
-			changeWD(cwd);
-			free(cwd);
-
-			tmplFile = tmpl_loadFile("resources/c/templates-extended.tmpl");
-
-			if (tmplFile == NULL) {
-				printf("ERROR: couldn't load template for extended structure\n");
-				m_error = STATUS_FAIL;
-				return;
-			}
-
+			userTemplatePath = "c/templates-extended.tmpl";
+			defaultTemplatePath = "resources/c/templates-extended.tmpl";
 			break;
 		case MINIMAL:
-			tmplFile = tmpl_loadFile("c/templates-minimal.tmpl");
-
-			if (tmplFile) {
-				printf("cpm: found user config for minimal structure\n");
-				break;
-			}
-
-			changeWD(cwd);
-			free(cwd);
-
-			tmplFile = tmpl_loadFile("resources/c/templates-minimal.tmpl");
-
-			if (tmplFile == NULL) {
-				printf("ERROR: couldn't load template for minimal structure\n");
-				m_error = STATUS_FAIL;
-				return;
-			}
-
+			userTemplatePath = "c/templates-minimal.tmpl";
+			defaultTemplatePath = "resources/c/templates-minimal.tmpl";
 			break;
 		case NO_FOLDERS:
-			tmplFile = tmpl_loadFile("c/templates-no-folders.tmpl");
+			userTemplatePath = "c/templates-no-folders.tmpl";
+			defaultTemplatePath = "resources/c/templates-no-folders.tmpl";
+			break;
+	}
 
-			if (tmplFile) {
-				printf("cpm: found user config for no-folders structure\n");
-				break;
-			}
+	if (!config->defaultTemplates) {
+		tmplFile = tmpl_loadFile(userTemplatePath);
+	}
 
-			changeWD(cwd);
+	if (tmplFile == NULL || config->defaultTemplates) {
+		changeWD(cwd);
+
+		tmplFile = tmpl_loadFile(defaultTemplatePath);
+
+		if (tmplFile == NULL) {
+			printf("cpm: ERROR: could not load any template files for the current structure (no default or user templates found)\n");
+
 			free(cwd);
 
-			tmplFile = tmpl_loadFile("resources/c/templates-no-folders.tmpl");
-
-			if (tmplFile == NULL) {
-				printf("ERROR: couldn't load template for no-folders structure\n");
-				m_error = STATUS_FAIL;
-				return;
-			}
-
-			break;
-		default:
 			m_error = STATUS_FAIL;
 			return;
+		}
+	} else {
+		printf("cpm: found user config\n");
 	}
+
+	free(cwd);
 
 	size_t mcLength, mhLength, mkLength;
 	char* mainC    = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
