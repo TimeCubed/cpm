@@ -180,11 +180,7 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	size_t used = 0, bufSize = READ_CHUNK;
 
 	if (sectionLine + 1 == lineCount) {
-		printf("ERROR: unexpected end of file while parsing section '%s'\n", sectionName);
-
-		free(lines);
-
-		return NULL;
+		return "";
 	}
 
 	for (size_t i = sectionLine + 1; i < lineCount; i++) {
