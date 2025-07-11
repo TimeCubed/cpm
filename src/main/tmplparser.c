@@ -177,10 +177,12 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 		return NULL;
 	}
 
+	sectionContents[0] = '\0';
+
 	size_t used = 0, bufSize = READ_CHUNK;
 
 	if (sectionLine + 1 == lineCount) {
-		return "";
+		return sectionContents;
 	}
 
 	for (size_t i = sectionLine + 1; i < lineCount; i++) {
