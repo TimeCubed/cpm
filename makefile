@@ -11,7 +11,7 @@ TARGET   := $(BIN_DIR)/cpm
 INCLUDES := $(HDR_DIR)
 CC       := gcc
 CPPFLAGS := -D LINUX
-CFLAGS   := -Werror -Wall -Wextra -Wpedantic
+CFLAGS   := -Werror -Wall -Wextra -Wpedantic -fanalyzer
 LFLAGS   := 
 
 SOURCES   := $(shell find $(SRC_DIR) -type f -name '*.c')
