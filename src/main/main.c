@@ -10,7 +10,7 @@
 
 #define PRINTLN(input) printf(input); printf("\n")
 
-bool g_isC = true;
+bool g_isC = true, g_defaultTemplates = false;
 Structure g_projectStructure = EXTENDED;
 
 void setC(void) {
@@ -31,6 +31,10 @@ void setMinimal(void) {
 
 void setNoFolders(void) {
 	g_projectStructure = NO_FOLDERS;
+}
+
+void setDefault(void) {
+	g_defaultTemplates = true;
 }
 
 void printHelp(void) {
@@ -74,6 +78,7 @@ int main(int argc, char** argv) {
 	addSwitch("--extended",   setExtended);
 	addSwitch("--minimal",    setMinimal);
 	addSwitch("--no-folders", setNoFolders);
+	addSwitch("--default",    setDefault);
 
 	addSwitch("--help",       printHelp);
 	addSwitch("-h",           printHelp);
@@ -110,7 +115,8 @@ int main(int argc, char** argv) {
 	ProjectConfig config = config_init(
 		cstring_init(argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 64)),
 		g_isC ? C : CPP,
-		g_projectStructure
+		g_projectStructure,
+		g_defaultTemplates
 	);
 
 	config_loadFiles(&config);
