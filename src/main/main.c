@@ -119,9 +119,7 @@ int main(int argc, char** argv) {
 		g_defaultTemplates
 	);
 
-	config_loadFiles(&config);
-
-	if (config_checkError() == STATUS_FAIL) {
+	if (config_loadFiles(&config) == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
