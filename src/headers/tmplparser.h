@@ -15,10 +15,15 @@ typedef struct {
 
 /**
  * Loads a .tmpl file from `path`.
+ * 
+ * Note: The loaded contents of the file is automatically terminated by a null
+ * byte. The length of the file contents is set as the number of bytes in the 
+ * loaded file + 1 (i.e. including the null byte).
  *
  * @param path The path of the file to load.
  *
- * @return `STATUS_OK` if successful, `STATUS_FAIL` otherwise.
+ * @return A pointer to the TMPLFile object with the contents and the file
+ *         length. `NULL` if an error occured while loading file contents.
  */
 TMPLFile* tmpl_loadFile(const char* path);
 
