@@ -37,11 +37,12 @@ TMPLFile* tmpl_loadFile(const char* path) {
 			char* tmp = realloc(contents, bufSize);
 
 			if (tmp == NULL) {
+				printf("ERROR: not enough memory\n");
+
 				free(contents);
 				free(tmplFile);
 				fclose(file);
 
-				perror("realloc fail");
 				return NULL;
 			}
 
@@ -77,10 +78,20 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	size_t lnCount = 0;
 	size_t lineLength = 0;
 
-	for (size_t i = 0; i < length; i++) {
+	size_t i;
+
+	// let me be completely clear, I have no freaking idea *how* this thing ends
+	// up correctly saving the line data for the last line in the string despite
+	// it sometimes not ending with a newline. it just does. I have no idea how,
+	// or why, or what, it's just somehow saving that last line anyway and, you
+	// know what, I'll just leave it be.
+	for (i = 0; i < length; i++) {
 		lineLength++;
 
+		// genuinely, where on god's green earth is it actually finding a
+		// newline. w h a t.
 		if (string[i] == '\n') {
+			// important note: the length of a line does not include the newline
 			lines[lnCount].length = lineLength - 1;
 			lines[lnCount].startIndex = i - lineLength + 1;
 
@@ -100,7 +111,10 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 		}
 	}
 
-	*lineCount = lnCount;
+	lines[lnCount].length = lineLength - 1;
+	lines[lnCount].startIndex = i - lineLength + 1;
+
+	if (lineCount) *lineCount = lnCount;
 	return lines;
 }
 
@@ -112,7 +126,7 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 		return NULL;
 	}
 
-	size_t sectionIndex;
+	size_t sectionLine = 0;
 	bool foundSection = false;
 
 	const char* fileContents = tmplFile->contents;
@@ -131,13 +145,11 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 
 		if (strlen(sectionName) == lineLength - 2 && strncmp(sectionName, fileContents + startIndex + 1, lineLength - 2) == 0) {
 			foundSection = true;
-			sectionIndex = startIndex + lineLength + 1;
+			sectionLine = i;
 
 			break;
 		}
 	}
-
-	free(lines);
 
 	if (!foundSection) {
 		printf("ERROR: failed to read from template file: section not found: %s\n", sectionName);
@@ -153,27 +165,45 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 
 	size_t used = 0, bufSize = READ_CHUNK;
 
-	for (size_t i = sectionIndex; i < tmplFile->length; i++) {
-		if (fileContents[i] == '[') {
+	if (sectionLine + 1 == lineCount) {
+		printf("ERROR: unexpected end of file while parsing section '%s'\n", sectionName);
+
+		free(lines);
+
+		return NULL;
+	}
+
+	for (size_t i = sectionLine + 1; i < lineCount; i++) {
+		size_t startIndex = lines[i].startIndex;
+		size_t lineLength = lines[i].length;
+
+		if (fileContents[startIndex] == '[' && fileContents[startIndex + lineLength - 1] == ']') {
 			break;
 		}
 
-		if (used + READ_CHUNK + 1 > bufSize) {
-			bufSize += READ_CHUNK + 1;
+		for (size_t j = startIndex; j < startIndex + lineLength + 1; j++) {
+			if (used + 1 > bufSize) {
+				bufSize += READ_CHUNK + 1;
 
-			char* tmp = realloc(sectionContents, bufSize);
+				char* tmp = realloc(sectionContents, bufSize);
 
-			if (tmp == NULL) {
-				free(sectionContents);
+				if (tmp == NULL) {
+					printf("ERROR: not enough memory\n");
 
-				return NULL;
+					free(sectionContents);
+					free(lines);
+
+					return NULL;
+				}
+
+				sectionContents = tmp;
 			}
 
-			sectionContents = tmp;
+			sectionContents[used++] = fileContents[j];
 		}
-
-		sectionContents[used++] = fileContents[i];
 	}
+
+	free(lines);
 
 	if (used > 0) {
 		sectionContents[used - 1] = '\0';
