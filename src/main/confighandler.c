@@ -6,20 +6,31 @@
 #include <crossplatform.h>
 #include <confighandler.h>
 
-// evil object oriented programming constructor? IN MY C??
-// IMPOSSIBLE
-ProjectConfig config_init(String name, Language language, Structure projectStructure, bool defaultTemplates) {
+static ProjectConfig* currentConfig;
+static int m_error = STATUS_OK;
+
+ProjectConfig config_init(void) {
 	ProjectConfig projectConfig = {
-		.name = name,
-		.language = language,
-		.projectStructure = projectStructure,
-		.defaultTemplates = defaultTemplates,
+		.name = cstring_init("default", 8),
+		.language = C,
+		.projectStructure = EXTENDED,
+		.defaultTemplates = false,
+		.mainC = cstring_init("", 1),
+		.mainH = cstring_init("", 1),
+		.makefile = cstring_init("", 1),
 	};
 
 	return projectConfig;
 }
 
-int config_loadFiles(ProjectConfig* config) {
+void config_loadFiles(void) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
 	TMPLFile* tmplFile = NULL;
 
 	char* cwd = getCWD(getPathMax());
@@ -33,49 +44,52 @@ int config_loadFiles(ProjectConfig* config) {
 	char* userTemplatePath = NULL;
 	char* defaultTemplatePath = NULL;
 
-	switch (config->projectStructure) {
+	switch (currentConfig->projectStructure) {
 		case EXTENDED:
-			if (config->language == C) {
+			if (currentConfig->language == C) {
 				userTemplatePath = "c/templates-extended.tmpl";
 				defaultTemplatePath = "resources/c/templates-extended.tmpl";
-			} else if (config->language == CPP) {
+			} else if (currentConfig->language == CPP) {
 				userTemplatePath = "cpp/templates-extended.tmpl";
 				defaultTemplatePath = "resources/cpp/templates-extended.tmpl";
 			}
 			break;
 		case MINIMAL:
-			if (config->language == C) {
+			if (currentConfig->language == C) {
 				userTemplatePath = "c/templates-minimal.tmpl";
 				defaultTemplatePath = "resources/c/templates-minimal.tmpl";
-			} else if (config->language == CPP) {
+			} else if (currentConfig->language == CPP) {
 				userTemplatePath = "cpp/templates-minimal.tmpl";
 				defaultTemplatePath = "resources/cpp/templates-minimal.tmpl";
 			}
 			break;
 		case NO_FOLDERS:
-			if (config->language == C) {
+			if (currentConfig->language == C) {
 				userTemplatePath = "c/templates-no-folders.tmpl";
 				defaultTemplatePath = "resources/c/templates-no-folders.tmpl";
-			} else if (config->language == CPP) {
+			} else if (currentConfig->language == CPP) {
 				userTemplatePath = "cpp/templates-no-folders.tmpl";
 				defaultTemplatePath = "resources/cpp/templates-no-folders.tmpl";
 			}
 			break;
 		default:
-			printf("cpm: ERROR: unknown error occurred\n");
-			return STATUS_FAIL;
+			printf("ERROR: unknown error occurred\n");
+
+			m_error = STATUS_FAIL;
+			return;
 	}
 
 	if (userTemplatePath == NULL || defaultTemplatePath == NULL) {
-		printf("cpm: ERROR: unknown error occurred\n");
-		return STATUS_FAIL;
+		printf("ERROR: unknown error occurred\n");
+		m_error = STATUS_FAIL;
+		return;
 	}
 
-	if (!config->defaultTemplates) {
+	if (!currentConfig->defaultTemplates) {
 		tmplFile = tmpl_loadFile(userTemplatePath);
 	}
 
-	if (tmplFile == NULL || config->defaultTemplates) {
+	if (tmplFile == NULL || currentConfig->defaultTemplates) {
 		changeWD(cwd);
 
 		tmplFile = tmpl_loadFile(defaultTemplatePath);
@@ -85,7 +99,8 @@ int config_loadFiles(ProjectConfig* config) {
 
 			free(cwd);
 
-			return STATUS_FAIL;
+			m_error = STATUS_FAIL;
+			return;
 		}
 	} else {
 		printf("cpm: found user config\n");
@@ -101,20 +116,116 @@ int config_loadFiles(ProjectConfig* config) {
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
 		free(tmplFile);
 
-		return STATUS_FAIL;
+		m_error = STATUS_FAIL;
+		return;
 	}
 
-	config->mainC    = cstring_init(mainC, mcLength);
-	config->mainH    = cstring_init(mainH, mhLength);
-	config->makefile = cstring_init(makefile, mkLength);
+	currentConfig->mainC    = cstring_init(mainC, mcLength);
+	currentConfig->mainH    = cstring_init(mainH, mhLength);
+	currentConfig->makefile = cstring_init(makefile, mkLength);
 
 	free(tmplFile);
 
-	return STATUS_OK;
+	m_error = STATUS_OK;
+	return;
 }
 
-void config_free(ProjectConfig config) {
-	if (config.mainC.contents != NULL) free(config.mainC.contents);
-	if (config.mainH.contents != NULL) free(config.mainH.contents);
-	if (config.makefile.contents != NULL) free(config.makefile.contents);
+void config_setName(String name) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	m_error = STATUS_OK;
+
+	if (currentConfig->name.contents) free(currentConfig->name.contents);
+
+	currentConfig->name = name;
+}
+
+void config_setLanguage(Language language) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	m_error = STATUS_OK;
+	currentConfig->language = language;
+}
+
+void config_setStructure(Structure projectStructure) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	m_error = STATUS_OK;
+	currentConfig->projectStructure = projectStructure;
+}
+
+void config_setDefaultTemplates(bool defaultTemplates) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	m_error = STATUS_OK;
+	currentConfig->defaultTemplates = defaultTemplates;
+}
+
+void config_freeCurrent(void) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	if (currentConfig->name.contents) free(currentConfig->name.contents);
+	if (currentConfig->mainC.contents) free(currentConfig->mainC.contents);
+	if (currentConfig->mainH.contents) free(currentConfig->mainH.contents);
+	if (currentConfig->makefile.contents) free(currentConfig->makefile.contents);
+
+	currentConfig = NULL;
+	m_error = STATUS_OK;
+}
+
+void config_makeCurrent(ProjectConfig* config) {
+	if (config == NULL) {
+		printf("ERROR: config was NULL\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	currentConfig = config;
+	m_error = STATUS_OK;
+}
+
+bool config_isCurrent(void) {
+	return currentConfig != NULL;
+}
+
+ProjectConfig config_getCurrent(void) {
+	if (!config_isCurrent()) {
+		printf("ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return config_init();
+	}
+
+	m_error = STATUS_OK;
+	return *currentConfig;
+}
+
+int config_checkError(void) {
+	return m_error;
 }
