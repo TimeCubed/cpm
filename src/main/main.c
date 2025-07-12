@@ -39,17 +39,17 @@ void setDefault(void) {
 
 void printHelp(void) {
 	PRINTLN("usage: cpm <project_name> [options]");
-	PRINTLN(" ");
+	printf("\n");
 	PRINTLN("available options:");
 	PRINTLN("	language options:");
 	PRINTLN("	-c             sets the project's language as C (default)");
 	PRINTLN("	--cpp          sets the project's language as C++");
-	PRINTLN(" ");
+	printf("\n");
 	PRINTLN("	project structure settings:");
 	PRINTLN("	--extended     uses the extended project structure (default)");
 	PRINTLN("	--minimal      uses the minimal project structure");
 	PRINTLN("	--no-folders   uses the no folders project structure");
-	PRINTLN(" ");
+	printf("\n");
 	PRINTLN("	miscellaneous:");
 	PRINTLN("	--help (-h)    prints this screen and exits");
 	PRINTLN("	--version (-v) prints the current version of CPM running");
@@ -85,11 +85,6 @@ int main(int argc, char** argv) {
 	addSwitch("--version",    printVersion);
 	addSwitch("-v",           printVersion);
 
-	if (!g_isC) {
-		printf("cpm: C++ is currently unsupported.\n");
-		return 0;
-	}
-
 	int nonSwitchIndex = parseArgv(argc, argv);
 
 	// no project names given, so we'll quit and print the help menu
@@ -113,7 +108,7 @@ int main(int argc, char** argv) {
 	free(path);
 
 	ProjectConfig config = config_init(
-		cstring_init(argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 64)),
+		cstring_init(argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 32)),
 		g_isC ? C : CPP,
 		g_projectStructure,
 		g_defaultTemplates

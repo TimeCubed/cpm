@@ -1,4 +1,3 @@
-#include "errors.h"
 #include <main.h>
 #include <stdbool.h>
 #include <c_string.h>
@@ -31,25 +30,45 @@ int config_loadFiles(ProjectConfig* config) {
 	changeWD(homeDir);
 	changeWD(configDir);
 
-	char* userTemplatePath;
-	char* defaultTemplatePath;
+	char* userTemplatePath = NULL;
+	char* defaultTemplatePath = NULL;
 
 	switch (config->projectStructure) {
 		case EXTENDED:
-			userTemplatePath = "c/templates-extended.tmpl";
-			defaultTemplatePath = "resources/c/templates-extended.tmpl";
+			if (config->language == C) {
+				userTemplatePath = "c/templates-extended.tmpl";
+				defaultTemplatePath = "resources/c/templates-extended.tmpl";
+			} else if (config->language == CPP) {
+				userTemplatePath = "cpp/templates-extended.tmpl";
+				defaultTemplatePath = "resources/cpp/templates-extended.tmpl";
+			}
 			break;
 		case MINIMAL:
-			userTemplatePath = "c/templates-minimal.tmpl";
-			defaultTemplatePath = "resources/c/templates-minimal.tmpl";
+			if (config->language == C) {
+				userTemplatePath = "c/templates-minimal.tmpl";
+				defaultTemplatePath = "resources/c/templates-minimal.tmpl";
+			} else if (config->language == CPP) {
+				userTemplatePath = "cpp/templates-minimal.tmpl";
+				defaultTemplatePath = "resources/cpp/templates-minimal.tmpl";
+			}
 			break;
 		case NO_FOLDERS:
-			userTemplatePath = "c/templates-no-folders.tmpl";
-			defaultTemplatePath = "resources/c/templates-no-folders.tmpl";
+			if (config->language == C) {
+				userTemplatePath = "c/templates-no-folders.tmpl";
+				defaultTemplatePath = "resources/c/templates-no-folders.tmpl";
+			} else if (config->language == CPP) {
+				userTemplatePath = "cpp/templates-no-folders.tmpl";
+				defaultTemplatePath = "resources/cpp/templates-no-folders.tmpl";
+			}
 			break;
 		default:
 			printf("cpm: ERROR: unknown error occurred\n");
 			return STATUS_FAIL;
+	}
+
+	if (userTemplatePath == NULL || defaultTemplatePath == NULL) {
+		printf("cpm: ERROR: unknown error occurred\n");
+		return STATUS_FAIL;
 	}
 
 	if (!config->defaultTemplates) {
