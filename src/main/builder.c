@@ -10,7 +10,7 @@ static int createFile(char* path, String contents) {
 	FILE* file = fopen(path, "w");
 	
 	if (file == NULL) {
-		printf("ERROR: failed to open file \'%s\'\n", path);
+		printf("builder: ERROR: failed to open file \'%s\'\n", path);
 
 		return STATUS_FAIL;
 	}
@@ -18,7 +18,7 @@ static int createFile(char* path, String contents) {
 	size_t ret = fwrite(contents.contents, sizeof(char), contents.length, file);
 
 	if (ret < contents.length) {
-		printf("ERROR: failed to write to file \'%s\'\n", path);
+		printf("builder: ERROR: failed to write to file \'%s\'\n", path);
 
 		fclose(file);
 		return STATUS_FAIL;

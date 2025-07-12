@@ -9,12 +9,15 @@ TMPLFile* tmpl_loadFile(const char* path) {
 	TMPLFile* tmplFile = calloc(1, sizeof(TMPLFile));
 
 	if (tmplFile == NULL) {
+		printf("tmplparser: ERROR: not enough memory\n");
+
 		return NULL;
 	}
 
 	FILE* file = fopen(path, "r");
 
 	if (file == NULL) {
+		printf("tmplparser: ERROR: could not open file at %s\n", path);
 		free(tmplFile);
 
 		return NULL;
@@ -24,6 +27,8 @@ TMPLFile* tmpl_loadFile(const char* path) {
 	char* contents = malloc(READ_CHUNK);
 
 	if (contents == NULL) {
+		printf("tmplparser: ERROR: not enough memory\n");
+
 		free(tmplFile);
 		fclose(file);
 
@@ -37,7 +42,7 @@ TMPLFile* tmpl_loadFile(const char* path) {
 			char* tmp = realloc(contents, bufSize);
 
 			if (tmp == NULL) {
-				printf("ERROR: not enough memory\n");
+				printf("tmplparser: ERROR: not enough memory\n");
 
 				free(contents);
 				free(tmplFile);
@@ -74,6 +79,8 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	Line* lines = calloc(1, sizeof(Line));
 
 	if (lines == NULL) {
+		printf("tmplparser: ERROR: not enough memory\n");
+
 		return NULL;
 	}
 
@@ -107,6 +114,8 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 			Line* tmpLines = realloc(lines, (lnCount * 2) * sizeof(Line));
 
 			if (tmpLines == NULL) {
+				printf("tmplparser: ERROR: not enough memory\n");
+
 				free(lines);
 
 				return NULL;
@@ -161,7 +170,7 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	}
 
 	if (!foundSection) {
-		printf("ERROR: failed to read from template file: section not found: %s\n", sectionName);
+		printf("tmplparser: ERROR: failed to read from template file: section not found: %s\n", sectionName);
 		return NULL;
 	}
 
@@ -169,6 +178,8 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	char* sectionContents = malloc(READ_CHUNK);
 
 	if (sectionContents == NULL) {
+		printf("tmplparser: ERROR: not enough memory\n");
+
 		return NULL;
 	}
 
@@ -195,7 +206,7 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 				char* tmp = realloc(sectionContents, bufSize);
 
 				if (tmp == NULL) {
-					printf("ERROR: not enough memory\n");
+					printf("tmplparser: ERROR: not enough memory\n");
 
 					free(sectionContents);
 					free(lines);
