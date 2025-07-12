@@ -10,6 +10,9 @@
 #include <crossplatform.h>
 
 #define PRINTLN(input) printf(input); printf("\n")
+#define verbose(fmt) \
+	if (g_verbose) \
+		printf(fmt)
 
 bool g_verbose;
 
@@ -63,7 +66,7 @@ void printHelp(void) {
 	PRINTLN("	miscellaneous:");
 	PRINTLN("	--help (-h)    prints this screen and exits");
 	PRINTLN("	--version      prints the current version of CPM running");
-	PRINTLN("	-v             verbose output");
+	PRINTLN("	--verbose (-v) verbose output");
 
 	exit(0);
 }
@@ -83,6 +86,14 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
+	addSwitch("--help",       printHelp);
+	addSwitch("-h",           printHelp);
+	addSwitch("--version",    printVersion);
+	addSwitch("--verbose",    setVerbose);
+	addSwitch("-v",           setVerbose);
+
+	parseArgv(argc, argv);
+
 	// add all switches and flags here
 	addSwitch("-c",           setC);
 	addSwitch("--cpp",        setCPP);
@@ -90,11 +101,6 @@ int main(int argc, char** argv) {
 	addSwitch("--minimal",    setMinimal);
 	addSwitch("--no-folders", setNoFolders);
 	addSwitch("--default",    setDefault);
-
-	addSwitch("--help",       printHelp);
-	addSwitch("-h",           printHelp);
-	addSwitch("--version",    printVersion);
-	addSwitch("-v",           setVerbose);
 
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
@@ -111,6 +117,8 @@ int main(int argc, char** argv) {
 	changeWD(path);
 	free(path);
 
+	verbose("cpm: initializing config..\n");
+
 	ProjectConfig config = config_init();
 	config_makeCurrent(&config);
 
@@ -122,11 +130,11 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	if (g_verbose) printf("cpm: setting up config with parsed values..\n");
+	verbose("cpm: setting up config with parsed values..\n");
 
 	config_setName(cstring_initFromConst(argv[nonSwitchIndex]));
 
-	if (g_verbose) printf("cpm: loading template files..\n");
+	verbose("cpm: loading template files..\n");
 
 	config_loadFiles();
 	if (config_checkError() == STATUS_FAIL) {
@@ -137,13 +145,14 @@ int main(int argc, char** argv) {
 	changeWD(cwd);
 	free(cwd);
 
-	if (g_verbose) printf("cpm: building project..\n");
+	verbose("cpm: building project..\n");
 
 	if (buildProject() == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
 
-	if (g_verbose) printf("cpm: finishing up..\n");
+	verbose("cpm: finishing up..\n");
+	printf("cpm: successfully created project '%s'\n", config_getCurrent().name.contents);
 	config_freeCurrent();
 }
