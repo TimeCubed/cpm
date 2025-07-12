@@ -11,7 +11,7 @@ TARGET   := $(BIN_DIR)/cpm
 INCLUDES := $(HDR_DIR)
 CC       := gcc
 CPPFLAGS := -D LINUX
-CFLAGS   := -Werror -Wall -Wextra -Wpedantic -fanalyzer
+CFLAGS   := -Werror -Wall -Wextra -Wpedantic
 LFLAGS   := 
 
 SOURCES   := $(shell find $(SRC_DIR) -type f -name '*.c')
@@ -19,7 +19,7 @@ LIBS      := $(shell find $(LIBS_DIR) -type f -name '*.c')
 OBJS      := $(patsubst $(SRC_DIR)/%.c,$(OUT_DIR)/%.o,$(SOURCES))
 OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.c,$(OUT_DIR)/%.o,$(LIBS))
 
-all: $(TARGET) resources
+all: $(TARGET) | resources
 
 $(TARGET): $(OBJS) $(OBJS_LIBS) | $(ALL_DIRS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc)) $(LFLAGS)
@@ -33,11 +33,11 @@ $(OUT_DIR)/%.o:: $(LIBS_DIR)/%.c
 $(ALL_DIRS):
 	@mkdir -p $@
 
+analysis: CFLAGS += -fanalyzer
+analysis: $(TARGET) | resources
+
 resources:
 	@cp -rf $(RSC_DIR)/ $(BIN_DIR)/
-
-test:
-	@echo $(SOURCES)
 
 clean:
 	rm -r $(OUT_DIR)/*
