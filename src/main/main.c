@@ -122,6 +122,8 @@ int main(int argc, char** argv) {
 	ProjectConfig config = config_init();
 	config_makeCurrent(&config);
 
+	verbose("cpm: parsing argv..\n");
+
 	// important to call this *after* a config is current.
 	int nonSwitchIndex = parseArgv(argc, argv);
 
