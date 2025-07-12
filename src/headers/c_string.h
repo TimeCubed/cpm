@@ -10,4 +10,6 @@ typedef struct {
 
 String cstring_init(char* contents, size_t length);
 
+String cstring_initFromConst(const char* literal);
+
 #endif
