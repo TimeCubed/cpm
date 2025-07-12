@@ -1,5 +1,7 @@
+#include "errors.h"
 #include <main.h>
 #include <string.h>
+#include <builder.h>
 #include <c_string.h>
 #include <crossplatform.h>
 #include <confighandler.h>
@@ -95,7 +97,14 @@ static int setupNoFoldersStructure(ProjectConfig config) {
 	return STATUS_OK;
 }
 
-int buildProject(ProjectConfig config) {
+int buildProject(void) {
+	ProjectConfig config = config_getCurrent();
+	if (config_checkError() == STATUS_FAIL) {
+		printf("builder: ERROR: no config found\n");
+
+		return STATUS_FAIL;
+	}
+
 	switch (config.projectStructure) {
 		case EXTENDED:
 			return setupExtendedStructure(config);
