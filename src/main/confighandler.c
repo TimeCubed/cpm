@@ -11,13 +11,13 @@ static int m_error = STATUS_OK;
 
 ProjectConfig config_init(void) {
 	ProjectConfig projectConfig = {
-		.name = cstring_init("default", 8),
+		.name = cstring_initFromConst("default"),
 		.language = C,
 		.projectStructure = EXTENDED,
 		.defaultTemplates = false,
-		.mainC = cstring_init("", 1),
-		.mainH = cstring_init("", 1),
-		.makefile = cstring_init("", 1),
+		.mainC = cstring_initFromConst(""),
+		.mainH = cstring_initFromConst(""),
+		.makefile = cstring_initFromConst(""),
 	};
 
 	return projectConfig;
@@ -25,7 +25,7 @@ ProjectConfig config_init(void) {
 
 void config_loadFiles(void) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -73,14 +73,14 @@ void config_loadFiles(void) {
 			}
 			break;
 		default:
-			printf("ERROR: unknown error occurred\n");
+			printf("confighandler: ERROR: unknown error occurred\n");
 
 			m_error = STATUS_FAIL;
 			return;
 	}
 
 	if (userTemplatePath == NULL || defaultTemplatePath == NULL) {
-		printf("ERROR: unknown error occurred\n");
+		printf("confighandler: ERROR: unknown error occurred\n");
 		m_error = STATUS_FAIL;
 		return;
 	}
@@ -95,7 +95,7 @@ void config_loadFiles(void) {
 		tmplFile = tmpl_loadFile(defaultTemplatePath);
 
 		if (tmplFile == NULL) {
-			printf("cpm: ERROR: could not load any template files for the current structure (no default or user templates found)\n");
+			printf("confighandler: ERROR: could not load any template files for the current structure (no default or user templates found)\n");
 
 			free(cwd);
 
@@ -103,7 +103,7 @@ void config_loadFiles(void) {
 			return;
 		}
 	} else {
-		printf("cpm: found user config\n");
+		printf("confighandler: found user config\n");
 	}
 
 	free(cwd);
@@ -114,6 +114,7 @@ void config_loadFiles(void) {
 	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
 
 	if (mainC == NULL || mainH == NULL || makefile == NULL) {
+		printf("confighandler: ERROR: failed to read from template files");
 		free(tmplFile);
 
 		m_error = STATUS_FAIL;
@@ -132,7 +133,7 @@ void config_loadFiles(void) {
 
 void config_setName(String name) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -140,14 +141,14 @@ void config_setName(String name) {
 
 	m_error = STATUS_OK;
 
-	if (currentConfig->name.contents) free(currentConfig->name.contents);
+	if (currentConfig->name.contents != NULL) free(currentConfig->name.contents);
 
 	currentConfig->name = name;
 }
 
 void config_setLanguage(Language language) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -159,7 +160,7 @@ void config_setLanguage(Language language) {
 
 void config_setStructure(Structure projectStructure) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -171,7 +172,7 @@ void config_setStructure(Structure projectStructure) {
 
 void config_setDefaultTemplates(bool defaultTemplates) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -183,7 +184,7 @@ void config_setDefaultTemplates(bool defaultTemplates) {
 
 void config_freeCurrent(void) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -200,7 +201,7 @@ void config_freeCurrent(void) {
 
 void config_makeCurrent(ProjectConfig* config) {
 	if (config == NULL) {
-		printf("ERROR: config was NULL\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return;
@@ -216,7 +217,7 @@ bool config_isCurrent(void) {
 
 ProjectConfig config_getCurrent(void) {
 	if (!config_isCurrent()) {
-		printf("ERROR: no config found\n");
+		printf("confighandler: ERROR: no config found\n");
 
 		m_error = STATUS_FAIL;
 		return config_init();
