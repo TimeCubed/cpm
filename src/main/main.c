@@ -86,13 +86,23 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	addSwitch("--help",       printHelp);
-	addSwitch("-h",           printHelp);
-	addSwitch("--version",    printVersion);
-	addSwitch("--verbose",    setVerbose);
-	addSwitch("-v",           setVerbose);
+	// light parsing of argv
+	for (int i = 1; i < argc; i++) {
+		if (strnlen(argv[i], 10) == 10) {
+			continue;
+		}
 
-	parseArgv(argc, argv);
+		if (strncmp(argv[i], "--verbose", 9) == 0) {
+			g_verbose = true;
+			continue;
+		}
+
+		if (strncmp(argv[i], "-v", 2) == 0) {
+			g_verbose = true;
+		}
+	}
+
+	verbose("cpm: adding switches..\n");
 
 	// add all switches and flags here
 	addSwitch("-c",           setC);
@@ -101,6 +111,12 @@ int main(int argc, char** argv) {
 	addSwitch("--minimal",    setMinimal);
 	addSwitch("--no-folders", setNoFolders);
 	addSwitch("--default",    setDefault);
+
+	addSwitch("--help",       printHelp);
+	addSwitch("-h",           printHelp);
+	addSwitch("--version",    printVersion);
+	addSwitch("--verbose",    setVerbose);
+	addSwitch("-v",           setVerbose);
 
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
@@ -127,7 +143,8 @@ int main(int argc, char** argv) {
 	// important to call this *after* a config is current.
 	int nonSwitchIndex = parseArgv(argc, argv);
 
-	// no project names given, so we'll quit and print the help menu
+	// no project names given or an invalid argument was given, so we'll quit
+	// and print the help menu
 	if (nonSwitchIndex == -1) {
 		printHelp();
 	}
