@@ -1,4 +1,5 @@
 #include <main.h>
+#include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <builder.h>
@@ -14,27 +15,33 @@ bool g_isC = true, g_defaultTemplates = false;
 Structure g_projectStructure = EXTENDED;
 
 void setC(void) {
-	g_isC = true;
+	assert(config_isCurrent());
+	config_setLanguage(C);
 }
 
 void setCPP(void) {
-	g_isC = false;
+	assert(config_isCurrent());
+	config_setLanguage(CPP);
 }
 
 void setExtended(void) {
-	g_projectStructure = EXTENDED;
+	assert(config_isCurrent());
+	config_setStructure(EXTENDED);
 }
 
 void setMinimal(void) {
-	g_projectStructure = MINIMAL;
+	assert(config_isCurrent());
+	config_setStructure(MINIMAL);
 }
 
 void setNoFolders(void) {
-	g_projectStructure = NO_FOLDERS;
+	assert(config_isCurrent());
+	config_setStructure(NO_FOLDERS);
 }
 
 void setDefault(void) {
-	g_defaultTemplates = true;
+	assert(config_isCurrent());
+	config_setDefaultTemplates(true);
 }
 
 void printHelp(void) {
@@ -85,13 +92,6 @@ int main(int argc, char** argv) {
 	addSwitch("--version",    printVersion);
 	addSwitch("-v",           printVersion);
 
-	int nonSwitchIndex = parseArgv(argc, argv);
-
-	// no project names given, so we'll quit and print the help menu
-	if (nonSwitchIndex == -1) {
-		printHelp();
-	}
-
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
 	size_t pathMax = getPathMax();
@@ -107,14 +107,23 @@ int main(int argc, char** argv) {
 	changeWD(path);
 	free(path);
 
-	ProjectConfig config = config_init(
-		cstring_init(argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 32)),
-		g_isC ? C : CPP,
-		g_projectStructure,
-		g_defaultTemplates
-	);
+	ProjectConfig config = config_init();
+	config_makeCurrent(&config);
 
-	if (config_loadFiles(&config) == STATUS_FAIL) {
+	// important to call this *after* a config is current.
+	int nonSwitchIndex = parseArgv(argc, argv);
+
+	// no project names given, so we'll quit and print the help menu
+	if (nonSwitchIndex == -1) {
+		printHelp();
+	}
+
+	config_setName(cstring_init(
+		argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 32)
+	));
+
+	config_loadFiles();
+	if (config_checkError() == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
@@ -122,10 +131,10 @@ int main(int argc, char** argv) {
 	changeWD(cwd);
 	free(cwd);
 
-	if (buildProject(config) == STATUS_FAIL) {
+	if (buildProject() == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
 
-	config_free(config);
+	config_freeCurrent();
 }
