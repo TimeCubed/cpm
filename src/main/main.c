@@ -11,8 +11,11 @@
 
 #define PRINTLN(input) printf(input); printf("\n")
 
-bool g_isC = true, g_defaultTemplates = false;
-Structure g_projectStructure = EXTENDED;
+bool g_verbose;
+
+void setVerbose(void) {
+	g_verbose = true;
+}
 
 void setC(void) {
 	assert(config_isCurrent());
@@ -59,7 +62,8 @@ void printHelp(void) {
 	printf("\n");
 	PRINTLN("	miscellaneous:");
 	PRINTLN("	--help (-h)    prints this screen and exits");
-	PRINTLN("	--version (-v) prints the current version of CPM running");
+	PRINTLN("	--version      prints the current version of CPM running");
+	PRINTLN("	-v             verbose output");
 
 	exit(0);
 }
@@ -79,6 +83,8 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
+	printf("cpm: adding switches..\n");
+
 	// add all switches and flags here
 	addSwitch("-c",           setC);
 	addSwitch("--cpp",        setCPP);
@@ -90,10 +96,12 @@ int main(int argc, char** argv) {
 	addSwitch("--help",       printHelp);
 	addSwitch("-h",           printHelp);
 	addSwitch("--version",    printVersion);
-	addSwitch("-v",           printVersion);
+	addSwitch("-v",           setVerbose);
 
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
+	printf("cpm: changing directory to current executable's directory..\n");
+
 	size_t pathMax = getPathMax();
 	char* cwd = getCWD(pathMax);
 
@@ -107,8 +115,12 @@ int main(int argc, char** argv) {
 	changeWD(path);
 	free(path);
 
+	printf("cpm: initting config..\n");
+
 	ProjectConfig config = config_init();
 	config_makeCurrent(&config);
+
+	printf("cpm: parsing argv..\n");
 
 	// important to call this *after* a config is current.
 	int nonSwitchIndex = parseArgv(argc, argv);
@@ -118,9 +130,11 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	config_setName(cstring_init(
-		argv[nonSwitchIndex], strnlen(argv[nonSwitchIndex], 32)
-	));
+	printf("cpm: setting up config with parsed values..\n");
+
+	config_setName(cstring_initFromConst(argv[nonSwitchIndex]));
+
+	printf("cpm: loading template files..\n");
 
 	config_loadFiles();
 	if (config_checkError() == STATUS_FAIL) {
@@ -131,10 +145,13 @@ int main(int argc, char** argv) {
 	changeWD(cwd);
 	free(cwd);
 
+	printf("cpm: building project..\n");
+
 	if (buildProject() == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
 
+	printf("cpm: finishing up..\n");
 	config_freeCurrent();
 }
