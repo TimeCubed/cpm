@@ -17,7 +17,7 @@ more extensible and configurable. For now, here's what's planned to get the curr
     - [ ] Add windows support
         - [ ] Finish windows-specific function implementations
         - [ ] Test CPM for windows
-    - [ ] Add C++ support
+    - [x] ~~Add C++ support~~
     - [x] ~~Add checks for user-created .tmpl files~~
         - [x] ~~Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files~~
         - [x] ~~Load user-created .tmpl files at the config directory if they exist, and use them to make projects~~
@@ -30,7 +30,7 @@ more extensible and configurable. For now, here's what's planned to get the curr
     - [x] ~~Polish up .tmpl parser (tmplparser.c)~~
         - [x] ~~Syntax checking (currently only invalid sections apply here)~~
         - [x] ~~User feedback when a syntax error is found, or when a section isn't found~~
-    - [ ] Add more user feedback on errors
+    - [x] ~~Add more user feedback on errors~~
     - [ ] Code base polish
         - [ ] Add some comments around non-trivial code
         - [ ] Polish up readability (if needed)
