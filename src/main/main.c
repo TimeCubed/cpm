@@ -83,8 +83,6 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	printf("cpm: adding switches..\n");
-
 	// add all switches and flags here
 	addSwitch("-c",           setC);
 	addSwitch("--cpp",        setCPP);
@@ -100,8 +98,6 @@ int main(int argc, char** argv) {
 
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
-	printf("cpm: changing directory to current executable's directory..\n");
-
 	size_t pathMax = getPathMax();
 	char* cwd = getCWD(pathMax);
 
@@ -115,12 +111,8 @@ int main(int argc, char** argv) {
 	changeWD(path);
 	free(path);
 
-	printf("cpm: initting config..\n");
-
 	ProjectConfig config = config_init();
 	config_makeCurrent(&config);
-
-	printf("cpm: parsing argv..\n");
 
 	// important to call this *after* a config is current.
 	int nonSwitchIndex = parseArgv(argc, argv);
@@ -130,11 +122,11 @@ int main(int argc, char** argv) {
 		printHelp();
 	}
 
-	printf("cpm: setting up config with parsed values..\n");
+	if (g_verbose) printf("cpm: setting up config with parsed values..\n");
 
 	config_setName(cstring_initFromConst(argv[nonSwitchIndex]));
 
-	printf("cpm: loading template files..\n");
+	if (g_verbose) printf("cpm: loading template files..\n");
 
 	config_loadFiles();
 	if (config_checkError() == STATUS_FAIL) {
@@ -145,13 +137,13 @@ int main(int argc, char** argv) {
 	changeWD(cwd);
 	free(cwd);
 
-	printf("cpm: building project..\n");
+	if (g_verbose) printf("cpm: building project..\n");
 
 	if (buildProject() == STATUS_FAIL) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
 
-	printf("cpm: finishing up..\n");
+	if (g_verbose) printf("cpm: finishing up..\n");
 	config_freeCurrent();
 }
