@@ -130,7 +130,10 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	// this accounts for that by saving that data anyway, since we always leave
 	// enough space for 1 more line.
 	lines[lnCount].length = lineLength - 1;
-	lines[lnCount].startIndex = i - lineLength + 1;
+	// i here is actually 1 above what it was in the last line in the for loop,
+	// meaning we have to subtract 1.
+	// (i - 1) - lineLength + 1 = i - lineLength
+	lines[lnCount].startIndex = i - lineLength;
 
 	if (lineCount) *lineCount = ++lnCount;
 	return lines;
