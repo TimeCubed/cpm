@@ -20,5 +20,6 @@ int changeWD(char* path);
 int makeDirectory(char* path, int mode);
 char* getHomeDir(void);
 char* getConfigDir(void);
+char* translatePath(const char* path);
 
 #endif
