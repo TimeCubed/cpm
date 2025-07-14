@@ -176,7 +176,7 @@ char* getHomeDir(void) {
 }
 
 char* getConfigDir(void) {
-	return "AppData\\cpm\\templates\\";
+	return "AppData\\Local\\cpm\\templates\\";
 }
 
 char* translatePath(const char* path) {
