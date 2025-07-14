@@ -6,11 +6,11 @@ OUT_DIR  := ./out
 BIN_DIR  := $(OUT_DIR)/bin
 
 ALL_DIRS := $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(OUT_DIR) $(BIN_DIR) $(LIBS_DIR)
-TARGET   := $(BIN_DIR)/cpm
+TARGET   := $(BIN_DIR)/cpm.exe
 
 INCLUDES := $(HDR_DIR)
-CC       := gcc
-CPPFLAGS := -D LINUX
+CC       := x86_64-w64-mingw32-gcc
+CPPFLAGS := -D WINDOWS
 CFLAGS   := -Werror -Wall -Wextra -Wpedantic
 LFLAGS   := 
 
