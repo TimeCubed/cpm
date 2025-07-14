@@ -10,7 +10,7 @@
 #include <crossplatform.h>
 
 #define PRINTLN(input) printf(input); printf("\n")
-#define verbose(...) printf(__VA_ARGS__)
+#define verbose(...) if (g_verbose) printf(__VA_ARGS__)
 
 bool g_verbose;
 
