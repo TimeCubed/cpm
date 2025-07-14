@@ -3,20 +3,18 @@ CPM is a small tool I made in C to quickly make C/C++ projects. It has support f
 structure types (extended, minimal or no folders), and (in the future! see [todos](https://github.com/TimeCubed/cpm/blob/main/README.md#Todos)) can generate
 template files based on user-configurable .tmpl files
 
-Note: while the current src *does work*, it's currently in a "minimum viable product" state, meaning
-a lot of stuff is still not done. For now, it only works on linux (from my testing), but there's not
-yet any support for windows, which I'm planning to add (no, there won't be any macos support), and
-there's no support for C++ projects either (also planning to add).
+CPM v2 is now almost complete! What's left now is to polish up the remaining rough edges, but for
+now, CPM does work on both linux and windows!
 
 # Todos
 
 I have a lot of features planned for CPM, including a rework of how it generates projects so it's
 more extensible and configurable. For now, here's what's planned to get the current project working:
 
-- [ ] Functionality:
-    - [ ] Add windows support
-        - [ ] Finish windows-specific function implementations
-        - [ ] Test CPM for windows
+- [x] ~~Functionality:~~
+    - [x] ~~Add windows support~~
+        - [x] ~~Finish windows-specific function implementations~~
+        - [x] ~~Test CPM for windows~~
     - [x] ~~Add C++ support~~
     - [x] ~~Add checks for user-created .tmpl files~~
         - [x] ~~Check inside `~/.config/cpm/templates` or `C:\Users\user\Appdata\Roaming\.cpm\templates` for user-created files~~
