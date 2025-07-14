@@ -85,6 +85,9 @@ void config_loadFiles(void) {
 		return;
 	}
 
+	userTemplatePath = translatePath(userTemplatePath);
+	defaultTemplatePath = translatePath(defaultTemplatePath);
+
 	if (!currentConfig->defaultTemplates) {
 		tmplFile = tmpl_loadFile(userTemplatePath);
 	}
