@@ -1,7 +1,6 @@
-#include "c_string.h"
-#include <errhandlingapi.h>
 #include <main.h>
 #include <string.h>
+#include <c_string.h>
 #include <crossplatform.h>
 
 // ty stackoverflow
@@ -73,9 +72,8 @@ char* getConfigDir(void) {
 	return ".config/cpm/templates/";
 }
 
-void translatePath(char* path, size_t len) {
-	UNUSED(path);
-	UNUSED(len);
+char* translatePath(const char* path) {
+	return (char*) path;
 }
 #endif
 

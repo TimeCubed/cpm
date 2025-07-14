@@ -4,6 +4,7 @@
 #include <main.h>
 
 #ifdef LINUX
+#include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <linux/limits.h>
@@ -11,6 +12,7 @@
 
 #ifdef WINDOWS
 #include <windows.h>
+#include <errhandlingapi.h>
 #endif
 
 char* getExecutablePath(size_t* len);
