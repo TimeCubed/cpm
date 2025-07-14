@@ -129,7 +129,9 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	// function will miss the last line and not save it properly.
 	// this accounts for that by saving that data anyway, since we always leave
 	// enough space for 1 more line.
-	lines[lnCount].length = lineLength - 1;
+	//
+	// not sure why this needs to also have 1 added to it, but go off windows.
+	lines[lnCount].length = lineLength;
 	// i here is actually 1 above what it was in the last line in the for loop,
 	// meaning we have to subtract 1.
 	// (i - 1) - lineLength + 1 = i - lineLength
