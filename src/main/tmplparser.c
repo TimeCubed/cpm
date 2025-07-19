@@ -1,38 +1,49 @@
 #include <main.h>
-#include <tmplparser.h>
-#include <stdbool.h>
 #include <string.h>
+#include <stdbool.h>
+#include <tmplparser.h>
 
 #define READ_CHUNK 128
 
-TMPLFile* tmpl_loadFile(const char* path) {
+LoaderStatus tmpl_loadFile(const char* path) {
+	LoaderStatus status;
 	TMPLFile* tmplFile = calloc(1, sizeof(TMPLFile));
 
 	if (tmplFile == NULL) {
-		printf("tmplparser: ERROR: not enough memory\n");
+		status = (LoaderStatus) {
+			.errorMessage = "ERROR: not enough memory\n",
+			.hasValue = false
+		};
 
-		return NULL;
+		return status;
 	}
 
 	FILE* file = fopen(path, "r");
 
 	if (file == NULL) {
-		printf("tmplparser: ERROR: could not open file at %s\n", path);
 		free(tmplFile);
 
-		return NULL;
+		status = (LoaderStatus) {
+			.errorMessage = "ERROR: could not open file for parsing\n",
+			.hasValue = false
+		};
+
+		return status;
 	}
 
 	size_t used = 0, bufSize = READ_CHUNK;
 	char* contents = malloc(READ_CHUNK);
 
 	if (contents == NULL) {
-		printf("tmplparser: ERROR: not enough memory\n");
-
 		free(tmplFile);
 		fclose(file);
 
-		return NULL;
+		status = (LoaderStatus) {
+			.errorMessage = "ERROR: not enough memory\n",
+			.hasValue = false
+		};
+
+		return status;
 	}
 
 	while (1) {
@@ -42,13 +53,16 @@ TMPLFile* tmpl_loadFile(const char* path) {
 			char* tmp = realloc(contents, bufSize);
 
 			if (tmp == NULL) {
-				printf("tmplparser: ERROR: not enough memory\n");
-
 				free(contents);
 				free(tmplFile);
 				fclose(file);
 
-				return NULL;
+				status = (LoaderStatus) {
+					.errorMessage = "ERROR: not enough memory\n",
+					.hasValue = false
+				};
+
+				return status;
 			}
 
 			contents = tmp;
@@ -70,7 +84,12 @@ TMPLFile* tmpl_loadFile(const char* path) {
 
 	fclose(file);
 
-	return tmplFile;
+	status = (LoaderStatus) {
+		.tmplFile = tmplFile,
+		.hasValue = true
+	};
+
+	return status;
 }
 
 // some implicit assumptions splitByNewline makes:
@@ -141,12 +160,19 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 	return lines;
 }
 
-char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length) {
+ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length) {
+	ParserStatus status;
+
 	size_t lineCount;
 	Line* lines = splitByNewline(tmplFile->contents, tmplFile->length, &lineCount);
 
 	if (tmplFile == NULL || lines == NULL || sectionName == NULL) {
-		return NULL;
+		status = (ParserStatus) {
+			.errorMessage = "ERROR: input parameter was NULL\n",
+			.hasValue = false
+		};
+
+		return status;
 	}
 
 	size_t sectionLine = 0;
@@ -175,17 +201,24 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	}
 
 	if (!foundSection) {
-		printf("tmplparser: ERROR: failed to read from template file: section not found: %s\n", sectionName);
-		return NULL;
+		status = (ParserStatus) {
+			.errorMessage = "ERROR: failed to read from file: section not found\n",
+			.hasValue = false
+		};
+
+		return status;
 	}
 
 	// load contents
 	char* sectionContents = malloc(READ_CHUNK);
 
 	if (sectionContents == NULL) {
-		printf("tmplparser: ERROR: not enough memory\n");
+		status = (ParserStatus) {
+			.errorMessage = "ERROR: not enough memory\n",
+			.hasValue = false
+		};
 
-		return NULL;
+		return status;
 	}
 
 	sectionContents[0] = '\0';
@@ -193,7 +226,12 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 	size_t used = 0, bufSize = READ_CHUNK;
 
 	if (sectionLine + 1 == lineCount) {
-		return sectionContents;
+		status = (ParserStatus) {
+			.sectionContents = sectionContents,
+			.hasValue = true
+		};
+
+		return status;
 	}
 
 	for (size_t i = sectionLine + 1; i < lineCount; i++) {
@@ -211,12 +249,15 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 				char* tmp = realloc(sectionContents, bufSize);
 
 				if (tmp == NULL) {
-					printf("tmplparser: ERROR: not enough memory\n");
+					status = (ParserStatus) {
+						.errorMessage = "ERROR: not enough memory\n",
+						.hasValue = false
+					};
 
 					free(sectionContents);
 					free(lines);
 
-					return NULL;
+					return status;
 				}
 
 				sectionContents = tmp;
@@ -236,5 +277,10 @@ char* tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionNam
 		if (length) *length = 0;
 	}
 
-	return sectionContents;
+	status = (ParserStatus) {
+		.sectionContents = sectionContents,
+		.hasValue = true
+	};
+
+	return status;
 }
