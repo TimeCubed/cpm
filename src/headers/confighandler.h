@@ -22,6 +22,7 @@ typedef struct {
 	Structure projectStructure;
 
 	bool defaultTemplates;
+	bool verbose;
 
 	// hardcoding the files for the project is likely a bad idea if I want to
 	// support other languages in the future, but it's also the easiest method 
@@ -104,6 +105,17 @@ void config_setStructure(Structure projectStructure);
  *                         `false` otherwise.
  */
 void config_setDefaultTemplates(bool defaultTemplates);
+
+/**
+ * Sets verbose logging output.
+ *
+ * If there is no current config, m_error is set to `STATUS_FAIL` and this
+ * function won't do anything. Otherwise, m_error is set to `STATUS_OK`.
+ *
+ * @param verbose `true` to allow verbose logging,
+ *                `false` to disallow verbose logging.
+ */
+void config_setVerbose(bool verbose);
 
 /**
  * Frees all strings stored inside the current config.
