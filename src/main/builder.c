@@ -2,8 +2,7 @@
 #include <main.h>
 #include <string.h>
 #include <builder.h>
-#include <c_string.h>
-#include <crossplatform.h>
+#include <util/crossplatform.h>
 #include <confighandler.h>
 
 #define verbose(...) if (config_isCurrent()) if (config_getCurrent().verbose) printf(__VA_ARGS__)

@@ -3,11 +3,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include <builder.h>
-#include <c_string.h>
-#include <cliswitch.h>
 #include <tmplparser.h>
 #include <confighandler.h>
-#include <crossplatform.h>
+#include <util/c_string.h>
+#include <util/cliswitch.h>
+#include <util/crossplatform.h>
 
 #define PRINTLN(input) printf(input); printf("\n")
 #define verbose(...) if (g_verbose) printf(__VA_ARGS__)

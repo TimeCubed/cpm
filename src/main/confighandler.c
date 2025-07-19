@@ -1,10 +1,10 @@
 #include <main.h>
 #include <stdbool.h>
-#include <c_string.h>
-#include <cliswitch.h>
 #include <tmplparser.h>
-#include <crossplatform.h>
 #include <confighandler.h>
+#include <util/c_string.h>
+#include <util/cliswitch.h>
+#include <util/crossplatform.h>
 
 #define verbose(...) if (currentConfig != NULL) if (currentConfig->verbose) printf(__VA_ARGS__)
 

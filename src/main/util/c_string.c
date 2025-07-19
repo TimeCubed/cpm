@@ -1,6 +1,6 @@
 #include <main.h>
 #include <string.h>
-#include <c_string.h>
+#include <util/c_string.h>
 
 String cstring_init(char* contents, size_t length) {
 	String string = {

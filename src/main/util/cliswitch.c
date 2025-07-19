@@ -1,7 +1,7 @@
 #include <main.h>
-#include <cliswitch.h>
-#include <stdbool.h>
 #include <string.h>
+#include <stdbool.h>
+#include <util/cliswitch.h>
 
 Func* callbacks;
 const char** switches;

@@ -1,7 +1,7 @@
 #include <main.h>
 #include <string.h>
-#include <c_string.h>
-#include <crossplatform.h>
+#include <util/c_string.h>
+#include <util/crossplatform.h>
 
 // ty stackoverflow
 // https://stackoverflow.com/questions/3599160/how-can-i-suppress-unused-parameter-warnings-in-c

@@ -3,7 +3,7 @@
 
 #include <main.h>
 #include <stdbool.h>
-#include <c_string.h>
+#include <util/c_string.h>
 
 typedef enum {
 	C,
