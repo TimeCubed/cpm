@@ -108,19 +108,9 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 
 	size_t i;
 
-	// let me be completely clear, I have no freaking idea *how* this thing ends
-	// up correctly saving the line data for the last line in the string despite
-	// it sometimes not ending with a newline. it just does. I have no idea how,
-	// or why, or what, it's just somehow saving that last line anyway and, you
-	// know what, I'll just leave it be.
 	for (i = 0; i < length; i++) {
 		lineLength++;
 
-		// genuinely, where on god's green earth is it actually finding a
-		// newline. w h a t.
-		//
-		// ohh it was neovim
-		// neovim was adding it because POSIX says to add it, ok
 		if (string[i] == '\n') {
 			// important note: the length of a line does not include the newline
 			lines[lnCount].length = lineLength - 1;
@@ -133,8 +123,6 @@ static Line* splitByNewline(const char* string, const size_t length, size_t* lin
 			Line* tmpLines = realloc(lines, (lnCount * 2) * sizeof(Line));
 
 			if (tmpLines == NULL) {
-				printf("tmplparser: ERROR: not enough memory\n");
-
 				free(lines);
 
 				return NULL;
@@ -172,6 +160,8 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 			.hasValue = false
 		};
 
+		free(lines);
+
 		return status;
 	}
 
@@ -206,6 +196,8 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 			.hasValue = false
 		};
 
+		free(lines);
+
 		return status;
 	}
 
@@ -217,6 +209,8 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 			.errorMessage = "ERROR: not enough memory\n",
 			.hasValue = false
 		};
+
+		free(lines);
 
 		return status;
 	}
@@ -230,6 +224,8 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 			.sectionContents = sectionContents,
 			.hasValue = true
 		};
+
+		free(lines);
 
 		return status;
 	}
