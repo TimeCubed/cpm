@@ -6,6 +6,8 @@
 #include <crossplatform.h>
 #include <confighandler.h>
 
+#define verbose(...) if (currentConfig != NULL) if (currentConfig->verbose) printf(__VA_ARGS__)
+
 static ProjectConfig* currentConfig;
 static int m_error = STATUS_OK;
 
@@ -15,6 +17,7 @@ ProjectConfig config_init(void) {
 		.language = C,
 		.projectStructure = EXTENDED,
 		.defaultTemplates = false,
+		.verbose = false,
 		.mainC = cstring_initFromConst(""),
 		.mainH = cstring_initFromConst(""),
 		.makefile = cstring_initFromConst(""),
@@ -89,15 +92,23 @@ void config_loadFiles(void) {
 	defaultTemplatePath = translatePath(defaultTemplatePath);
 
 	if (!currentConfig->defaultTemplates) {
-		tmplFile = tmpl_loadFile(userTemplatePath);
+		LoaderStatus status = tmpl_loadFile(userTemplatePath);
+
+		if (status.hasValue == true) {
+			tmplFile = status.tmplFile;
+		} else {
+			verbose("%s", status.errorMessage);
+		}
 	}
 
 	if (tmplFile == NULL || currentConfig->defaultTemplates) {
 		changeWD(cwd);
 
-		tmplFile = tmpl_loadFile(defaultTemplatePath);
+		LoaderStatus status = tmpl_loadFile(defaultTemplatePath);
 
-		if (tmplFile == NULL) {
+		if (status.hasValue == false) {
+			verbose("%s", status.errorMessage);
+
 			printf("confighandler: ERROR: could not load any template files for the current structure (no default or user templates found)\n");
 
 			free(cwd);
@@ -105,20 +116,47 @@ void config_loadFiles(void) {
 			m_error = STATUS_FAIL;
 			return;
 		}
+
+		tmplFile = status.tmplFile;
 	} else {
-		printf("confighandler: found user config\n");
+		verbose("confighandler: found user config\n");
 	}
 
 	free(cwd);
 
 	size_t mcLength, mhLength, mkLength;
-	char* mainC    = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
-	char* mainH    = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
-	char* makefile = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
+	char* mainC    = NULL;
+	char* mainH    = NULL;
+	char* makefile = NULL;
 
-	if (mainC == NULL || mainH == NULL || makefile == NULL) {
-		printf("confighandler: ERROR: failed to read from template files");
-		free(tmplFile);
+	ParserStatus status = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
+
+	if (status.hasValue) {
+		mainC = status.sectionContents;
+	} else {
+		printf("%s: 'main.c'", status.errorMessage);
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	status = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
+
+	if (status.hasValue) {
+		mainH = status.sectionContents;
+	} else {
+		printf("%s: 'main.h'", status.errorMessage);
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	status = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
+
+	if (status.hasValue) {
+		makefile = status.sectionContents;
+	} else {
+		printf("%s: 'makefile'", status.errorMessage);
 
 		m_error = STATUS_FAIL;
 		return;
@@ -200,6 +238,17 @@ void config_freeCurrent(void) {
 
 	currentConfig = NULL;
 	m_error = STATUS_OK;
+}
+
+void config_setVerbose(bool verbose) {
+	if (!config_isCurrent()) {
+		printf("confighandler: ERROR: no config found\n");
+
+		m_error = STATUS_FAIL;
+		return;
+	}
+
+	currentConfig->verbose = verbose;
 }
 
 void config_makeCurrent(ProjectConfig* config) {
