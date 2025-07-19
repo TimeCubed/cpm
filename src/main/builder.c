@@ -6,7 +6,9 @@
 #include <crossplatform.h>
 #include <confighandler.h>
 
-static int createFile(char* path, String contents) {
+#define verbose(...) if (config_isCurrent()) if (config_getCurrent().verbose) printf(__VA_ARGS__)
+
+static int createFile(const char* path, const String contents) {
 	FILE* file = fopen(path, "w");
 	
 	if (file == NULL) {
@@ -28,6 +30,20 @@ static int createFile(char* path, String contents) {
 	return STATUS_OK;
 }
 
+static int createFiles(const char** fileNames, const String* fileContents, int fileCount) {
+	verbose("builder: creating files..\n");
+
+	for (int i = 0; i < fileCount; i++) {
+		verbose("builder: creating file %s", fileNames[i]);
+
+		if (createFile(fileNames[i], fileContents[i]) == STATUS_FAIL) {
+			return STATUS_FAIL;
+		}
+	}
+
+	return STATUS_OK;
+}
+
 static int setupExtendedStructure(ProjectConfig config) {
 	if (makeDirectory(config.name.contents, 0755) == STATUS_FAIL) {
 		return STATUS_FAIL;
@@ -43,16 +59,10 @@ static int setupExtendedStructure(ProjectConfig config) {
 		}
 	}
 
-	char* files[3] = {"src/main/main.c", "src/headers/main.h", "makefile"};
-	String contents[3] = {config.mainC, config.mainH, config.makefile};
+	const char* files[3] = {"src/main/main.c", "src/headers/main.h", "makefile"};
+	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
-	for (int i = 0; i < 3; i++) {
-		if (createFile(files[i], contents[i]) == STATUS_FAIL) {
-			return STATUS_FAIL;
-		}
-	}
-
-	return STATUS_OK;
+	return createFiles(files, contents, 3);
 }
 
 static int setupMinimalStructure(ProjectConfig config) {
@@ -66,16 +76,10 @@ static int setupMinimalStructure(ProjectConfig config) {
 		return STATUS_FAIL;
 	}
 
-	char* files[3] = {"src/main.c", "src/main.h", "makefile"};
-	String contents[3] = {config.mainC, config.mainH, config.makefile};
+	const char* files[3] = {"src/main.c", "src/main.h", "makefile"};
+	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
-	for (int i = 0; i < 3; i++) {
-		if (createFile(files[i], contents[i]) == STATUS_FAIL) {
-			return STATUS_FAIL;
-		}
-	}
-
-	return STATUS_OK;
+	return createFiles(files, contents, 3);
 }
 
 static int setupNoFoldersStructure(ProjectConfig config) {
@@ -85,16 +89,10 @@ static int setupNoFoldersStructure(ProjectConfig config) {
 
 	changeWD(config.name.contents);
 
-	char* files[3] = {"main.c", "main.h", "makefile"};
-	String contents[3] = {config.mainC, config.mainH, config.makefile};
+	const char* files[3] = {"main.c", "main.h", "makefile"};
+	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
-	for (int i = 0; i < 3; i++) {
-		if (createFile(files[i], contents[i]) == STATUS_FAIL) {
-			return STATUS_FAIL;
-		}
-	}
-
-	return STATUS_OK;
+	return createFiles(files, contents, 3);
 }
 
 int buildProject(void) {
@@ -107,10 +105,13 @@ int buildProject(void) {
 
 	switch (config.projectStructure) {
 		case EXTENDED:
+			verbose("builder: setting up extended project structure..\n");
 			return setupExtendedStructure(config);
 		case MINIMAL:
+			verbose("builder: setting up minimal project structure..\n");
 			return setupMinimalStructure(config);
 		case NO_FOLDERS:
+			verbose("builder: setting up no-folders project structure..\n");
 			return setupNoFoldersStructure(config);
 	}
 
