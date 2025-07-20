@@ -75,7 +75,7 @@ LoaderStatus tmpl_loadFile(const char* path);
  *         on the error.
  *
  *         Note : The `sectionContents` and `errorMessage` fields are wrapped in
- *         a union, meainig that if one is set, the other is likely pointing to
+ *         a union, meanig that if one is set, the other is likely pointing to
  *         invalid data.
  */
 ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length);
