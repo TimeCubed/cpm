@@ -280,3 +280,11 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 
 	return status;
 }
+
+void tmpl_free(TMPLFile* tmplFile) {
+	if (tmplFile->contents) {
+		free(tmplFile->contents);
+	}
+
+	free(tmplFile);
+}

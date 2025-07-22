@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 typedef struct {
-	const char* contents;
+	char* contents;
 	size_t length;
 } TMPLFile;
 
@@ -54,6 +54,7 @@ typedef struct {
  *         Note: The `tmplFile` and `errorMessage` fields are wrapped in a
  *         union, meaning that if one is set, the other is pointing to invalid
  *         data.
+ *         The caller is expected to call `tmpl_free()` on the returned object.
  */
 LoaderStatus tmpl_loadFile(const char* path);
 
@@ -79,5 +80,10 @@ LoaderStatus tmpl_loadFile(const char* path);
  *         invalid data.
  */
 ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length);
+
+/**
+ * Frees all data associated with the given `TMPLFile` object.
+ */
+void tmpl_free(TMPLFile* tmplFile);
 
 #endif
