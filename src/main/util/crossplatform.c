@@ -162,13 +162,13 @@ int makeDirectory(char* path, int _unused) {
 		if (error == ERROR_ALREADY_EXISTS) {
 			printf("ERROR: could not create directory at '%s': directory already exists\n", path);
 
-			return STATUS_FAIL;
+			return ERROR_DIRECTORY_ALREADY_EXISTS;
 		}
 
 		if (error == ERROR_PATH_NOT_FOUND) {
 			printf("ERROR: could not create directory at '%s': path not found\n", path);
 
-			return STATUS_FAIL;
+			return (error_t) ERROR_PATH_NOT_FOUND;
 		}
 	}
 

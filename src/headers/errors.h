@@ -17,7 +17,11 @@ typedef enum {
 	// file I/O errors
 	ERROR_FILE_OPEN_FAIL,
 	ERROR_FILE_WRITE_FAIL,
+	
+	// directory errors
 	ERROR_CREATE_DIRECTORY_FAIL,
+	ERROR_DIRECTORY_ALREADY_EXISTS,
+	ERROR_PATH_NOT_FOUND,
 
 	// CLI parsing related errors
 	ERROR_INVALID_ARGUMENT,
