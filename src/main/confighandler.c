@@ -286,6 +286,6 @@ bool config_isCurrent(void) {
 	return currentConfig != NULL;
 }
 
-int config_checkError(void) {
+error_t config_checkError(void) {
 	return m_error;
 }
