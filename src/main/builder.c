@@ -7,13 +7,13 @@
 
 #define verbose(...) if (config_isCurrent()) if (config_getCurrent().verbose) printf(__VA_ARGS__)
 
-static int createFile(const char* path, const String contents) {
+static error_t createFile(const char* path, const String contents) {
 	FILE* file = fopen(path, "w");
 	
 	if (file == NULL) {
 		printf("builder: ERROR: failed to open file \'%s\'\n", path);
 
-		return STATUS_FAIL;
+		return ERROR_FILE_OPEN_FAIL;
 	}
 
 	size_t ret = fwrite(contents.contents, sizeof(char), contents.length, file);
@@ -22,20 +22,20 @@ static int createFile(const char* path, const String contents) {
 		printf("builder: ERROR: failed to write to file \'%s\'\n", path);
 
 		fclose(file);
-		return STATUS_FAIL;
+		return ERROR_FILE_WRITE_FAIL;
 	}
 
 	fclose(file);
 	return STATUS_OK;
 }
 
-static int createFiles(const char** fileNames, const String* fileContents, int fileCount) {
+static error_t createFiles(const char** fileNames, const String* fileContents, int fileCount) {
 	verbose("builder: creating files..\n");
 
 	for (int i = 0; i < fileCount; i++) {
 		verbose("builder: creating file %s", fileNames[i]);
 
-		if (createFile(fileNames[i], fileContents[i]) == STATUS_FAIL) {
+		if (isError(createFile(fileNames[i], fileContents[i]))) {
 			return STATUS_FAIL;
 		}
 	}
@@ -44,7 +44,7 @@ static int createFiles(const char** fileNames, const String* fileContents, int f
 }
 
 static int setupExtendedStructure(ProjectConfig config) {
-	if (makeDirectory(config.name.contents, 0755) == STATUS_FAIL) {
+	if (isError(makeDirectory(config.name.contents, 0755))) {
 		return STATUS_FAIL;
 	}
 
@@ -53,7 +53,7 @@ static int setupExtendedStructure(ProjectConfig config) {
 	char* subdirs[4] = {"src", "src/main/", "src/headers/", "src/resources/"};
 
 	for (int i = 0; i < 4; i++) {
-		if (makeDirectory(subdirs[i], 0755) == STATUS_FAIL) {
+		if (isError(makeDirectory(subdirs[i], 0755))) {
 			return STATUS_FAIL;
 		}
 	}
@@ -65,13 +65,13 @@ static int setupExtendedStructure(ProjectConfig config) {
 }
 
 static int setupMinimalStructure(ProjectConfig config) {
-	if (makeDirectory(config.name.contents, 0755) == STATUS_FAIL) {
+	if (isError(makeDirectory(config.name.contents, 0755))) {
 		return STATUS_FAIL;
 	}
 
 	changeWD(config.name.contents);
 
-	if (makeDirectory("src", 0755) == STATUS_FAIL) {
+	if (isError(makeDirectory("src", 0755))) {
 		return STATUS_FAIL;
 	}
 
@@ -82,7 +82,7 @@ static int setupMinimalStructure(ProjectConfig config) {
 }
 
 static int setupNoFoldersStructure(ProjectConfig config) {
-	if (makeDirectory(config.name.contents, 0755) == STATUS_FAIL) {
+	if (isError(makeDirectory(config.name.contents, 0755))) {
 		return STATUS_FAIL;
 	}
 
@@ -94,12 +94,12 @@ static int setupNoFoldersStructure(ProjectConfig config) {
 	return createFiles(files, contents, 3);
 }
 
-int buildProject(void) {
+error_t buildProject(void) {
 	ProjectConfig config = config_getCurrent();
 	if (config_checkError() == STATUS_FAIL) {
 		printf("builder: ERROR: no config found\n");
 
-		return STATUS_FAIL;
+		return ERROR_NO_CURRENT_CONFIG;
 	}
 
 	switch (config.projectStructure) {

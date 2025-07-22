@@ -1,3 +1,4 @@
+#include "errors.h"
 #include <main.h>
 #include <string.h>
 #include <util/c_string.h>
@@ -52,13 +53,16 @@ char* getCWD(size_t maxLength) {
 }
 
 int changeWD(char* path) {
-	return chdir(path);
+	// ret will be 0 if successful, -1 otherwise
+	int ret = chdir(path);
+
+	return ret ? STATUS_FAIL : STATUS_OK;
 }
 
 int makeDirectory(char* path, int mode) {
 	if (mkdir(path, mode) != 0) {
 		printf("ERROR: could not create directory \'%s\': %s\n", path, strerror(errno));
-		return STATUS_FAIL;
+		return ERROR_CREATE_DIRECTORY_FAIL;
 	}
 
 	return STATUS_OK;

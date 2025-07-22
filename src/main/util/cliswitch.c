@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <util/cliswitch.h>
 
+#define MAX_SWITCH_NAME_LEN 32
+
 Func* callbacks;
 const char** switches;
 
@@ -13,7 +15,7 @@ static int init(void) {
 		callbacks = calloc(callbackC, sizeof(Func));
 
 		if (callbacks == NULL) {
-			return STATUS_FAIL;
+			return ERROR_NOT_ENOUGH_MEMORY;
 		}
 	}
 
@@ -21,7 +23,7 @@ static int init(void) {
 		switches = calloc(switchesC, sizeof(char**));
 
 		if (switches == NULL) {
-			return STATUS_FAIL;
+			return ERROR_NOT_ENOUGH_MEMORY;
 		}
 	}
 
@@ -34,13 +36,13 @@ int addSwitch(const char* switchName, Func callback) {
 	}
 
 	// no more than 32 characters allowed for a switch name
-	if (strnlen(switchName, 32) == 32) {
+	if (strnlen(switchName, MAX_SWITCH_NAME_LEN) == MAX_SWITCH_NAME_LEN) {
 		return STATUS_FAIL;
 	}
 
 	if (callbacks == NULL || switches == NULL) {
-		if (init() == STATUS_FAIL) {
-			return STATUS_FAIL;
+		if (isError(init())) {
+			return ERROR_NOT_ENOUGH_MEMORY;
 		}
 
 
@@ -58,7 +60,7 @@ int addSwitch(const char* switchName, Func callback) {
 	if (tmp1 == NULL) {
 		free(callbacks);
 
-		return STATUS_FAIL;
+		return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
 	const char** tmp2 = realloc(switches, switchesC * sizeof(char**));
@@ -67,7 +69,7 @@ int addSwitch(const char* switchName, Func callback) {
 		if (tmp1 != NULL) free(tmp1);
 		free(switches);
 
-		return STATUS_FAIL;
+		return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
 	callbacks = tmp1;
@@ -84,14 +86,14 @@ int parseArgv(int argc, char** argv) {
 	int nonSwitchIndex = -1;
 
 	for (int i = 1; i < argc; i++) {
-		if (strnlen(argv[i], 32) == 32) {
-			printf("cpm: WARN: argument %s is longer than 32 characters, skipping\n", argv[i]);
+		if (strnlen(argv[i], MAX_SWITCH_NAME_LEN) == MAX_SWITCH_NAME_LEN) {
+			printf("WARN: argument %s is longer than %i characters, skipping\n", argv[i], MAX_SWITCH_NAME_LEN);
 			continue;
 		}
 
 		bool isSwitch = false;
 		for (size_t j = 0; j < switchesC; j++) {
-			if (strncmp(argv[i], switches[j], 32) == 0) {
+			if (strncmp(argv[i], switches[j], MAX_SWITCH_NAME_LEN) == 0) {
 				callbacks[j]();
 
 				isSwitch = true;
@@ -99,6 +101,7 @@ int parseArgv(int argc, char** argv) {
 			}
 		}
 
+		// non-switch, doesn't begin with '-' -> first non-switch argument
 		if (!isSwitch && !foundNonSwitch && argv[i][0] != '-') {
 			nonSwitchIndex = i;
 			foundNonSwitch = true;
@@ -112,9 +115,7 @@ int parseArgv(int argc, char** argv) {
 			return -1;
 		}
 
-		// second project name
 		if (!isSwitch && foundNonSwitch) {
-			printf("cpm: ERROR: multiple project names given\n");
 			return -1;
 		}
 	}

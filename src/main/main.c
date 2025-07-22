@@ -12,6 +12,9 @@
 #define PRINTLN(input) printf(input); printf("\n")
 #define verbose(...) if (g_verbose) printf(__VA_ARGS__)
 
+// returns `returnVal` if expr is an error value
+#define try(expr, returnVal) if (isError(expr)) return returnVal
+
 bool g_verbose;
 
 void setVerbose(void) {
@@ -103,18 +106,18 @@ int main(int argc, char** argv) {
 	verbose("cpm: adding switches..\n");
 
 	// add all switches and flags here
-	addSwitch("-c",           setC);
-	addSwitch("--cpp",        setCPP);
-	addSwitch("--extended",   setExtended);
-	addSwitch("--minimal",    setMinimal);
-	addSwitch("--no-folders", setNoFolders);
-	addSwitch("--default",    setDefault);
+	try(addSwitch("-c",           setC)        , 1);
+	try(addSwitch("--cpp",        setCPP)      , 1);
+	try(addSwitch("--extended",   setExtended) , 1);
+	try(addSwitch("--minimal",    setMinimal)  , 1);
+	try(addSwitch("--no-folders", setNoFolders), 1);
+	try(addSwitch("--default",    setDefault)  , 1);
 
-	addSwitch("--help",       printHelp);
-	addSwitch("-h",           printHelp);
-	addSwitch("--version",    printVersion);
-	addSwitch("--verbose",    setVerbose);
-	addSwitch("-v",           setVerbose);
+	try(addSwitch("--help",       printHelp)   , 1);
+	try(addSwitch("-h",           printHelp)   , 1);
+	try(addSwitch("--version",    printVersion), 1);
+	try(addSwitch("--verbose",    setVerbose)  , 1);
+	try(addSwitch("-v",           setVerbose)  , 1);
 
 	// before changing the current directory to load templates, save the current
 	// working directory, so that we can come back later to create needed files.
@@ -156,7 +159,7 @@ int main(int argc, char** argv) {
 	verbose("cpm: loading template files..\n");
 
 	config_loadFiles();
-	if (config_checkError() == STATUS_FAIL) {
+	if (isError(config_checkError())) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}
@@ -166,7 +169,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: building project..\n");
 
-	if (buildProject() == STATUS_FAIL) {
+	if (isError(buildProject())) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
 	}

@@ -1,3 +1,4 @@
+#include "errors.h"
 #include <main.h>
 #include <stdbool.h>
 #include <tmplparser.h>
@@ -9,7 +10,7 @@
 #define verbose(...) if (currentConfig != NULL) if (currentConfig->verbose) printf(__VA_ARGS__)
 
 static ProjectConfig* currentConfig;
-static int m_error = STATUS_OK;
+static error_t m_error = STATUS_OK;
 
 ProjectConfig config_init(void) {
 	ProjectConfig projectConfig = {
@@ -30,7 +31,7 @@ void config_loadFiles(void) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -113,7 +114,7 @@ void config_loadFiles(void) {
 
 			free(cwd);
 
-			m_error = STATUS_FAIL;
+			m_error = ERROR_NO_TEMPLATE_FILES;
 			return;
 		}
 
@@ -138,7 +139,7 @@ void config_loadFiles(void) {
 
 		tmpl_free(tmplFile);
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_KEY_SECTION_NOT_FOUND;
 		return;
 	}
 
@@ -151,7 +152,7 @@ void config_loadFiles(void) {
 
 		tmpl_free(tmplFile);
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_KEY_SECTION_NOT_FOUND;
 		return;
 	}
 
@@ -164,7 +165,7 @@ void config_loadFiles(void) {
 
 		tmpl_free(tmplFile);
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_KEY_SECTION_NOT_FOUND;
 		return;
 	}
 
@@ -182,7 +183,7 @@ void config_setName(String name) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -197,7 +198,7 @@ void config_setLanguage(Language language) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -209,7 +210,7 @@ void config_setStructure(Structure projectStructure) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -221,7 +222,7 @@ void config_setDefaultTemplates(bool defaultTemplates) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -233,7 +234,7 @@ void config_freeCurrent(void) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -250,7 +251,7 @@ void config_setVerbose(bool verbose) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -261,7 +262,7 @@ void config_makeCurrent(ProjectConfig* config) {
 	if (config == NULL) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return;
 	}
 
@@ -269,20 +270,20 @@ void config_makeCurrent(ProjectConfig* config) {
 	m_error = STATUS_OK;
 }
 
-bool config_isCurrent(void) {
-	return currentConfig != NULL;
-}
-
 ProjectConfig config_getCurrent(void) {
 	if (!config_isCurrent()) {
 		printf("confighandler: ERROR: no config found\n");
 
-		m_error = STATUS_FAIL;
+		m_error = ERROR_NO_CURRENT_CONFIG;
 		return config_init();
 	}
 
 	m_error = STATUS_OK;
 	return *currentConfig;
+}
+
+bool config_isCurrent(void) {
+	return currentConfig != NULL;
 }
 
 int config_checkError(void) {

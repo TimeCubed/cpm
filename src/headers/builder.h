@@ -8,6 +8,6 @@
  *
  * @return `STATUS_OK` if successful, `STATUS_FAIL` otherwise.
  */
-int buildProject(void);
+error_t buildProject(void);
 
 #endif

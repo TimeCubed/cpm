@@ -36,6 +36,9 @@ $(ALL_DIRS):
 analysis: CFLAGS += -fanalyzer
 analysis: linux $(TARGET) | resources
 
+debug: CFLAGS += -g -O0
+debug: linux $(TARGET) | resources
+
 linux: CC := gcc
 linux: CPPFLAGS += -D LINUX
 linux: $(TARGET) | resources
