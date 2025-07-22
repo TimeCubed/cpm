@@ -79,15 +79,11 @@ void printVersion(void) {
 }
 
 int main(int argc, char** argv) {
-	// technically not required, as parseArgv will return -1 anyway, but it's
-	// a small optimization to avoid allocating any ram for switch storage.
-	// doesn't make it any less unnecessary, but my brain won't let me not do
-	// this.
 	if (argc < 2) {
 		printHelp();
 	}
 
-	// light parsing of argv
+	// light parsing step
 	for (int i = 1; i < argc; i++) {
 		if (strnlen(argv[i], 10) == 10) {
 			continue;
@@ -105,7 +101,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: adding switches..\n");
 
-	// add all switches and flags here
+	// add switches
 	try(addSwitch("-c",           setC)        , 1);
 	try(addSwitch("--cpp",        setCPP)      , 1);
 	try(addSwitch("--extended",   setExtended) , 1);
@@ -119,8 +115,7 @@ int main(int argc, char** argv) {
 	try(addSwitch("--verbose",    setVerbose)  , 1);
 	try(addSwitch("-v",           setVerbose)  , 1);
 
-	// before changing the current directory to load templates, save the current
-	// working directory, so that we can come back later to create needed files.
+	// change directory to load .tmpl files
 	size_t pathMax = getPathMax();
 	char* cwd = getCWD(pathMax);
 
@@ -136,6 +131,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: initializing config..\n");
 
+	// initialize the config
 	ProjectConfig config = config_init();
 	config_makeCurrent(&config);
 
@@ -143,6 +139,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: parsing argv..\n");
 
+	// full argv parsing step
 	// important to call this *after* a config is current.
 	int nonSwitchIndex = parseArgv(argc, argv);
 
@@ -158,6 +155,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: loading template files..\n");
 
+	// load all necessary files
 	config_loadFiles();
 	if (isError(config_checkError())) {
 		printf("cpm: ERROR: failed to create project\n");
@@ -169,6 +167,7 @@ int main(int argc, char** argv) {
 
 	verbose("cpm: building project..\n");
 
+	// build everything
 	if (isError(buildProject())) {
 		printf("cpm: ERROR: failed to create project\n");
 		return 1;
