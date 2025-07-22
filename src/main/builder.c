@@ -1,6 +1,6 @@
-#include "errors.h"
 #include <main.h>
 #include <string.h>
+#include <assert.h>
 #include <builder.h>
 #include <util/crossplatform.h>
 #include <confighandler.h>
@@ -59,6 +59,14 @@ static int setupExtendedStructure(ProjectConfig config) {
 	}
 
 	const char* files[3] = {"src/main/main.c", "src/headers/main.h", "makefile"};
+
+	// I hate having to hardcode these, but it'll make do.
+	// more motivation to get this finished and start work on v3, I guess.
+	if (config.language == CPP) {
+		files[0] = "src/main/main.cpp";
+		files[1] = "src/headers/main.hpp";
+	}
+
 	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
 	return createFiles(files, contents, 3);
@@ -76,6 +84,14 @@ static int setupMinimalStructure(ProjectConfig config) {
 	}
 
 	const char* files[3] = {"src/main.c", "src/main.h", "makefile"};
+
+	// I hate having to hardcode these, but it'll make do.
+	// more motivation to get this finished and start work on v3, I guess.
+	if (config.language == CPP) {
+		files[0] = "src/main.cpp";
+		files[1] = "src/main.hpp";
+	}
+
 	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
 	return createFiles(files, contents, 3);
@@ -89,6 +105,19 @@ static int setupNoFoldersStructure(ProjectConfig config) {
 	changeWD(config.name.contents);
 
 	const char* files[3] = {"main.c", "main.h", "makefile"};
+
+	// I hate having to hardcode these, but it'll make do.
+	// more motivation to get this finished and start work on v3, I guess.
+	//
+	// did you like the 3 comments about this one thing?
+	// yeah, I *really* don't like having to hardcode everything. I swear to god
+	// the only reason I'm finishing this up at all is so I can get to work on
+	// v3, this sucks ass to do
+	if (config.language == CPP) {
+		files[0] = "main.cpp";
+		files[1] = "main.hpp";
+	}
+	
 	const String contents[3] = {config.mainC, config.mainH, config.makefile};
 
 	return createFiles(files, contents, 3);
@@ -101,6 +130,11 @@ error_t buildProject(void) {
 
 		return ERROR_NO_CURRENT_CONFIG;
 	}
+
+	// it's likely that we can guarantee that config.language is either C or CPP at this point, but
+	// who knows? maybe a solar ray will bless someone's PC with flipping a bit in a single register
+	// at the right moment to mess everything up.
+	assert(config.language == C || config.language == CPP);
 
 	switch (config.projectStructure) {
 		case EXTENDED:
