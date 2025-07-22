@@ -65,6 +65,7 @@ void printHelp(void) {
 	PRINTLN("	--no-folders   uses the no folders project structure");
 	printf("\n");
 	PRINTLN("	miscellaneous:");
+	PRINTLN("	--default      force uses the default template files");
 	PRINTLN("	--help (-h)    prints this screen and exits");
 	PRINTLN("	--version      prints the current version of CPM running");
 	PRINTLN("	--verbose (-v) verbose output");
