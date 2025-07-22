@@ -136,6 +136,8 @@ void config_loadFiles(void) {
 	} else {
 		printf("%s: 'main.c'", status.errorMessage);
 
+		tmpl_free(tmplFile);
+
 		m_error = STATUS_FAIL;
 		return;
 	}
@@ -146,6 +148,8 @@ void config_loadFiles(void) {
 		mainH = status.sectionContents;
 	} else {
 		printf("%s: 'main.h'", status.errorMessage);
+
+		tmpl_free(tmplFile);
 
 		m_error = STATUS_FAIL;
 		return;
@@ -158,6 +162,8 @@ void config_loadFiles(void) {
 	} else {
 		printf("%s: 'makefile'", status.errorMessage);
 
+		tmpl_free(tmplFile);
+
 		m_error = STATUS_FAIL;
 		return;
 	}
@@ -166,7 +172,7 @@ void config_loadFiles(void) {
 	currentConfig->mainH    = cstring_init(mainH, mhLength);
 	currentConfig->makefile = cstring_init(makefile, mkLength);
 
-	free(tmplFile);
+	tmpl_free(tmplFile);
 
 	m_error = STATUS_OK;
 	return;
