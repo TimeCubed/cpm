@@ -93,22 +93,22 @@ void config_loadFiles(void) {
 	defaultTemplatePath = translatePath(defaultTemplatePath);
 
 	if (!currentConfig->defaultTemplates) {
-		LoaderStatus status = tmpl_loadFile(userTemplatePath);
+		LoaderStatus loaderStatus = tmpl_loadFile(userTemplatePath);
 
-		if (status.hasValue == true) {
-			tmplFile = status.tmplFile;
+		if (loaderStatus.hasValue == true) {
+			tmplFile = loaderStatus.tmplFile;
 		} else {
-			verbose("%s", status.errorMessage);
+			verbose("%s", loaderStatus.errorMessage);
 		}
 	}
 
 	if (tmplFile == NULL || currentConfig->defaultTemplates) {
 		changeWD(cwd);
 
-		LoaderStatus status = tmpl_loadFile(defaultTemplatePath);
+		LoaderStatus loaderStatus = tmpl_loadFile(defaultTemplatePath);
 
-		if (status.hasValue == false) {
-			verbose("%s", status.errorMessage);
+		if (loaderStatus.hasValue == false) {
+			verbose("%s", loaderStatus.errorMessage);
 
 			printf("confighandler: ERROR: could not load any template files for the current structure (no default or user templates found)\n");
 
@@ -118,7 +118,7 @@ void config_loadFiles(void) {
 			return;
 		}
 
-		tmplFile = status.tmplFile;
+		tmplFile = loaderStatus.tmplFile;
 	} else {
 		verbose("confighandler: found user config\n");
 	}
@@ -130,12 +130,12 @@ void config_loadFiles(void) {
 	char* mainH    = NULL;
 	char* makefile = NULL;
 
-	ParserStatus status = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
+	ParserStatus parserStatus = tmpl_getContentsOfSection(tmplFile, "main.c", &mcLength);
 
-	if (status.hasValue) {
-		mainC = status.sectionContents;
+	if (parserStatus.hasValue) {
+		mainC = parserStatus.sectionContents;
 	} else {
-		printf("%s: 'main.c'", status.errorMessage);
+		printf("%s: 'main.c'\n", parserStatus.errorMessage);
 
 		tmpl_free(tmplFile);
 
@@ -143,12 +143,12 @@ void config_loadFiles(void) {
 		return;
 	}
 
-	status = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
+	parserStatus = tmpl_getContentsOfSection(tmplFile, "main.h", &mhLength);
 
-	if (status.hasValue) {
-		mainH = status.sectionContents;
+	if (parserStatus.hasValue) {
+		mainH = parserStatus.sectionContents;
 	} else {
-		printf("%s: 'main.h'", status.errorMessage);
+		printf("%s: 'main.h'\n", parserStatus.errorMessage);
 
 		tmpl_free(tmplFile);
 
@@ -156,12 +156,12 @@ void config_loadFiles(void) {
 		return;
 	}
 
-	status = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
+	parserStatus = tmpl_getContentsOfSection(tmplFile, "makefile", &mkLength);
 
-	if (status.hasValue) {
-		makefile = status.sectionContents;
+	if (parserStatus.hasValue) {
+		makefile = parserStatus.sectionContents;
 	} else {
-		printf("%s: 'makefile'", status.errorMessage);
+		printf("%s: 'makefile'\n", parserStatus.errorMessage);
 
 		tmpl_free(tmplFile);
 
