@@ -14,7 +14,7 @@ String cstring_init(char* contents, size_t length) {
 String cstring_initFromConst(const char* literal) {
 	size_t len = strlen(literal);
 
-	char* copy = malloc(len);
+	char* copy = malloc(len + 1);
 
 	if (copy == NULL) {
 		return cstring_init(NULL, 0);
