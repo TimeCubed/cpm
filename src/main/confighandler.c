@@ -238,10 +238,10 @@ void config_freeCurrent(void) {
 		return;
 	}
 
-	if (currentConfig->name.contents) free(currentConfig->name.contents);
-	if (currentConfig->mainC.contents) free(currentConfig->mainC.contents);
-	if (currentConfig->mainH.contents) free(currentConfig->mainH.contents);
-	if (currentConfig->makefile.contents) free(currentConfig->makefile.contents);
+	cstring_free(&currentConfig->name);
+	cstring_free(&currentConfig->mainC);
+	cstring_free(&currentConfig->mainH);
+	cstring_free(&currentConfig->makefile);
 
 	currentConfig = NULL;
 	m_error = STATUS_OK;
