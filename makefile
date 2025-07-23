@@ -1,11 +1,13 @@
-SRC_DIR  := ./src/main
-HDR_DIR  := ./src/headers
-RSC_DIR  := ./src/resources
+ROOT_DIR := ./src
+MAIN_DIR := $(ROOT_DIR)/main
+SRC_DIR  := $(MAIN_DIR)/c
+HDR_DIR  := $(MAIN_DIR)/headers
+RSC_DIR  := $(ROOT_DIR)/resources
 LIBS_DIR := ./libs
 OUT_DIR  := ./out
 BIN_DIR  := $(OUT_DIR)/bin
 
-ALL_DIRS := $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(OUT_DIR) $(BIN_DIR) $(LIBS_DIR)
+ALL_DIRS := $(ROOT_DIR) $(MAIN_DIR) $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(OUT_DIR) $(BIN_DIR) $(LIBS_DIR)
 TARGET   := $(BIN_DIR)/cpm
 
 INCLUDES := $(HDR_DIR)
