@@ -58,21 +58,23 @@ int addSwitch(const char* switchName, Func callback) {
 	Func* tmp1 = realloc(callbacks, callbackC * sizeof(Func));
 
 	if (tmp1 == NULL) {
+		free(switches);
 		free(callbacks);
 
 		return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
+	callbacks = tmp1;
+
 	const char** tmp2 = realloc(switches, switchesC * sizeof(char**));
 
 	if (tmp2 == NULL) {
-		if (tmp1 != NULL) free(tmp1);
 		free(switches);
+		free(callbacks);
 
 		return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
-	callbacks = tmp1;
 	switches = tmp2;
 
 	callbacks[callbackC - 1] = callback;
