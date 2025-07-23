@@ -9,11 +9,6 @@ typedef struct {
 	size_t length;
 } TMPLFile;
 
-typedef struct {
-	size_t length;
-	size_t startIndex;
-} Line;
-
 // error handling struct that is a shameless copy of C++23's std::expected
 typedef struct {
 	union {
