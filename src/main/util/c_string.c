@@ -26,3 +26,12 @@ String cstring_initFromConst(const char* literal) {
 
 	return cstring_init(copy, len);
 }
+
+void cstring_free(String* string) {
+	if (string->contents) {
+		free(string->contents);
+	}
+
+	string->contents = NULL;
+	string->length = 0;
+}
