@@ -286,5 +286,8 @@ void tmpl_free(TMPLFile* tmplFile) {
 		free(tmplFile->contents);
 	}
 
+	tmplFile->contents = NULL;
+	tmplFile->length = 0;
+
 	free(tmplFile);
 }
