@@ -1,25 +1,32 @@
 ROOT_DIR := ./src
-MAIN_DIR := $(ROOT_DIR)/main
-SRC_DIR  := $(MAIN_DIR)/c
-HDR_DIR  := $(MAIN_DIR)/headers
-RSC_DIR  := $(ROOT_DIR)/resources
-LIBS_DIR := ./libs
 OUT_DIR  := ./out
 BIN_DIR  := $(OUT_DIR)/bin
 
-ALL_DIRS := $(ROOT_DIR) $(MAIN_DIR) $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(OUT_DIR) $(BIN_DIR) $(LIBS_DIR)
-TARGET   := $(BIN_DIR)/cpm
+# Main SRC
+MAIN_DIR := $(ROOT_DIR)/main
+SRC_DIR  := $(MAIN_DIR)/c
+HDR_DIR  := $(MAIN_DIR)/headers
 
 INCLUDES := $(HDR_DIR)
-CC       := x86_64-w64-mingw32-gcc
+SOURCES  := $(shell find $(SRC_DIR)/ -type f -name '*.c')
+OBJS     := $(patsubst $(SRC_DIR)/%.c,$(OUT_DIR)/%.o,$(SOURCES))
+
+# Resources
+RSC_DIR  := $(ROOT_DIR)/resources
+
+# Libraries
+LIBS_DIR := ./libs
+
+LIBS      := $(shell find $(LIBS_DIR) -type f -name '*.c')
+OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.c,$(OUT_DIR)/%.o,$(LIBS))
+
+ALL_DIRS := $(ROOT_DIR) $(OUT_DIR) $(BIN_DIR) $(MAIN_DIR) $(SRC_DIR) $(HDR_DIR) $(RSC_DIR) $(LIBS_DIR)
+TARGET   := $(BIN_DIR)/cpm
+
+CC       := gcc
 CFLAGS   := -Werror -Wall -Wextra -Wpedantic
 CPPFLAGS := 
 LFLAGS   := 
-
-SOURCES   := $(shell find $(SRC_DIR) -type f -name '*.c')
-LIBS      := $(shell find $(LIBS_DIR) -type f -name '*.c')
-OBJS      := $(patsubst $(SRC_DIR)/%.c,$(OUT_DIR)/%.o,$(SOURCES))
-OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.c,$(OUT_DIR)/%.o,$(LIBS))
 
 all: linux | resources
 
