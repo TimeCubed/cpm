@@ -1,10 +1,8 @@
 #include <main.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
 #include <tmplparser.h>
-#include <confighandler.h>
-
-#define verbose(...) if (config_isCurrent()) if (config_getCurrent().verbose) printf(__VA_ARGS__)
 
 #define READ_CHUNK 128
 
@@ -117,8 +115,9 @@ LoaderStatus tmpl_loadFile(const char* path) {
  *
  * The start index of each `Line` is 0-based.
  *
- * The length of each line counts only non-NULL characters (i.e. if a line
- * contained the string "hello world\n", the length would be 11, not 12).
+ * The length of each `Line` counts all characters within that line, including
+ * any '\n' or '\0' characters. As an example, if a line contained the non-NULL-
+ * terminated string "hello\n", the length of that line would be 6, not 5.
  *
  * Due to this, if you were to loop over the contents of a string using this
  * function, each line will contain either a newline, or, in the case of the
@@ -154,6 +153,7 @@ Line* splitByNewline(const char* string, const size_t length, size_t* lineCount)
 	size_t lineLength = 0;
 
 	for (size_t i = 0; i < length; i++) {
+		lineLength++;
 		// since the string is assumed to be not only NULL terminated, but that
 		// the length given also accounts for the NULL terminator, this check
 		// here ensures that we catch the final line, even if the string doesn't
@@ -161,13 +161,12 @@ Line* splitByNewline(const char* string, const size_t length, size_t* lineCount)
 		if (string[i] != '\n' && string[i] != '\0') {
 			// incrementing here means we'll exclude counting any newlines or
 			// NULL bytes
-			lineLength++;
 
 			continue;
 		}
 
 		lines[lnCount].length = lineLength;
-		lines[lnCount].startIndex = i - lineLength;
+		lines[lnCount].startIndex = i - lineLength + 1;
 
 		// reset lineLength
 		lineLength = 0;
@@ -214,41 +213,50 @@ Line* splitByNewline(const char* string, const size_t length, size_t* lineCount)
 	return tmp;
 }
 
+#define isSectionHeader(string, si, lnlen) string[si] == '[' && string[si + lnlen - 2] == ']'
 ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sectionName, size_t* length) {
-	ParserStatus status;
-
 	size_t lineCount;
 	Line* lines = splitByNewline(tmplFile->contents, tmplFile->length, &lineCount);
 
 	if (tmplFile == NULL || lines == NULL || sectionName == NULL) {
-		status = (ParserStatus) {
-			.errorMessage = "ERROR: input parameter was NULL\n",
-			.hasValue = false
-		};
-
 		free(lines);
 
-		return status;
+		return (ParserStatus) {
+			.errorMessage = "ERROR: input parameter was NULL",
+			.hasValue = false
+		};
 	}
-
-	size_t sectionLine = 0;
-	bool foundSection = false;
 
 	const char* fileContents = tmplFile->contents;
 
+	bool foundSection = false;
+	size_t sectionLine = 0;
+
+	// find the line where the section is
 	for (size_t i = 0; i < lineCount; i++) {
 		size_t startIndex = lines[i].startIndex;
 		size_t lineLength = lines[i].length;
 
-		if (lineLength < 3) {
+		// the smallest possible section is something like
+		// [a]\n
+		// which is 4 characters long.
+		//
+		// if the current line is shorter than this, then it can't be a section
+		// header.
+		if (lineLength < 4) {
 			continue;
 		}
 
-		if (fileContents[startIndex] != '[' || fileContents[startIndex + lineLength - 1] != ']') {
+		if (!(isSectionHeader(fileContents, startIndex, lineLength))) {
 			continue;
 		}
 
-		if (strlen(sectionName) == lineLength - 2 && strncmp(sectionName, fileContents + startIndex + 1, lineLength - 2) == 0) {
+		// if the line's length - 2 brackets - newline != sectionName's length
+		if (strlen(sectionName) != lineLength - 3) {
+			continue;
+		}
+
+		if (strncmp(sectionName, fileContents + startIndex + 1, lineLength - 3) == 0) {
 			foundSection = true;
 			sectionLine = i;
 
@@ -256,99 +264,91 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 		}
 	}
 
+	// no section found
 	if (!foundSection) {
-		status = (ParserStatus) {
+		free(lines);
+
+		return (ParserStatus) {
 			.errorMessage = "ERROR: failed to read from file: section not found",
-			.hasValue = false
+			.hasValue = false,
 		};
-
-		free(lines);
-
-		return status;
 	}
 
-	// load contents
 	char* sectionContents = malloc(READ_CHUNK);
-
-	if (sectionContents == NULL) {
-		status = (ParserStatus) {
-			.errorMessage = "ERROR: not enough memory",
-			.hasValue = false
-		};
-
-		free(lines);
-
-		return status;
-	}
-
-	sectionContents[0] = '\0';
-
 	size_t used = 0, bufSize = READ_CHUNK;
 
-	if (sectionLine + 1 == lineCount) {
-		status = (ParserStatus) {
-			.sectionContents = sectionContents,
-			.hasValue = true
-		};
-
+	if (sectionContents == NULL) {
 		free(lines);
-
-		return status;
+		
+		return (ParserStatus) {
+			.errorMessage = "ERROR: not enough memory",
+			.hasValue = false,
+		};
 	}
 
+	// if the section header is the last line in the file
+	if (sectionLine + 1 == lineCount) {
+		sectionContents[0] = '\0';
+
+		return (ParserStatus) {
+			.sectionContents = sectionContents,
+			.hasValue = true,
+		};
+	}
+
+	// if the next line after this section is another section => current section
+	// has no contents
+	if (isSectionHeader(fileContents, lines[sectionLine + 1].startIndex, lines[sectionLine + 1].length)) {
+		sectionContents[0] = '\0';
+
+		return (ParserStatus) {
+			.sectionContents = sectionContents,
+			.hasValue = true,
+		};
+	}
+
+	// copy contents
 	for (size_t i = sectionLine + 1; i < lineCount; i++) {
 		size_t startIndex = lines[i].startIndex;
 		size_t lineLength = lines[i].length;
 
-		if (fileContents[startIndex] == '[' && fileContents[startIndex + lineLength - 1] == ']') {
+		if (isSectionHeader(fileContents, startIndex, lineLength)) {
 			break;
 		}
 
-		for (size_t j = startIndex; j < startIndex + lineLength + 1; j++) {
-			if (used + 1 <= bufSize) {
-				sectionContents[used++] = fileContents[j];
-
-				continue;
-			}
-
-			bufSize += READ_CHUNK + 1;
-
-			char* tmp = realloc(sectionContents, bufSize);
-
-			if (tmp == NULL) {
-				status = (ParserStatus) {
-					.errorMessage = "ERROR: not enough memory",
-					.hasValue = false
-				};
-
-				free(sectionContents);
-				free(lines);
-
-				return status;
-			}
-
-			sectionContents = tmp;
-
+		for (size_t j = startIndex; j < startIndex + lineLength; j++) {
 			sectionContents[used++] = fileContents[j];
+
+			if (used + 1 > bufSize) {
+				bufSize += READ_CHUNK + 1;
+
+				char* tmp = realloc(sectionContents, bufSize);
+
+				if (tmp == NULL) {
+					free(lines);
+					free(sectionContents);
+
+					return (ParserStatus) {
+						.errorMessage = "ERROR: not enough memory",
+						.hasValue = false,
+					};
+				}
+
+				sectionContents = tmp;
+			}
 		}
 	}
 
 	free(lines);
 
-	if (used > 0) {
-		sectionContents[used - 1] = '\0';
-		if (length) *length = used - 1;
-	} else {
-		sectionContents[0] = '\0';
-		if (length) *length = 0;
-	}
+	sectionContents[used - 1] = '\0';
 
-	status = (ParserStatus) {
-		.sectionContents = sectionContents,
+	if (length) *length = used - 1;
+
+	return (ParserStatus) {
+		.sectionContents = sectionContents, 
 		.hasValue = true
 	};
-
-	return status;
 }
 
 void tmpl_free(TMPLFile* tmplFile) {
