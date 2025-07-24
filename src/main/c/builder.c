@@ -33,7 +33,7 @@ static error_t createFiles(const char** fileNames, const String* fileContents, i
 	verbose("builder: creating files..\n");
 
 	for (int i = 0; i < fileCount; i++) {
-		verbose("builder: creating file %s", fileNames[i]);
+		verbose("builder: creating file %s\n", fileNames[i]);
 
 		if (isError(createFile(fileNames[i], fileContents[i]))) {
 			return STATUS_FAIL;
