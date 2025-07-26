@@ -289,6 +289,7 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 	// if the section header is the last line in the file
 	if (sectionLine + 1 == lineCount) {
 		sectionContents[0] = '\0';
+		free(lines);
 
 		return (ParserStatus) {
 			.sectionContents = sectionContents,
@@ -300,6 +301,7 @@ ParserStatus tmpl_getContentsOfSection(const TMPLFile* tmplFile, const char* sec
 	// has no contents
 	if (isSectionHeader(fileContents, lines[sectionLine + 1].startIndex, lines[sectionLine + 1].length)) {
 		sectionContents[0] = '\0';
+		free(lines);
 
 		return (ParserStatus) {
 			.sectionContents = sectionContents,
