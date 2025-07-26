@@ -74,7 +74,7 @@ void printHelp(void) {
 }
 
 void printVersion(void) {
-	PRINTLN("CPM v2.0");
+	PRINTLN("CPM v2.2");
 
 	exit(0);
 }
