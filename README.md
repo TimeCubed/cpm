@@ -90,13 +90,7 @@ To compile CPM for Windows, run:
 make windows
 ```
 
-This uses the MinGW32 version of `gcc` built for Linux. If you are using the Windows version of MinGW32 GCC, you should be able to run
-
-```bash
-make
-```
-
-if the MinGW32 GCC executable is runnable using `gcc`, and you have a Windows version of GNU Make installed, also runnable using `make`.
+This uses the MinGW32 version of `gcc` built for Linux, which can be found [here](https://www.mingw-w64.org/getting-started/archlinux/). If you are using the Windows version of MinGW32 GCC, you should be able to run this command if the MinGW32 GCC executable is runnable using `gcc`, and you have a Windows version of GNU Make installed, also runnable using `make`.
 
 I recommend using WSL and cross-compiling CPM for windows using that, as it's a lot easier to do this with.
 
