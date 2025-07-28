@@ -1,4 +1,3 @@
-#include "errors.h"
 #include <main.h>
 #include <string.h>
 #include <util/c_string.h>
