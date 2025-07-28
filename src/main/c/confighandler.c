@@ -13,7 +13,7 @@ static ProjectConfig* currentConfig;
 static error_t m_error = STATUS_OK;
 
 ProjectConfig config_init(void) {
-	ProjectConfig projectConfig = {
+	return (ProjectConfig) {
 		.name = cstring_initFromConst("default"),
 		.language = C,
 		.projectStructure = EXTENDED,
@@ -23,8 +23,7 @@ ProjectConfig config_init(void) {
 		.mainH = cstring_initFromConst(""),
 		.makefile = cstring_initFromConst(""),
 	};
-
-	return projectConfig;
+;
 }
 
 void config_loadFiles(void) {
