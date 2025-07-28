@@ -1,7 +1,13 @@
 #ifndef CROSS_PLATFORM
 #define CROSS_PLATFORM
 
-#include <main.h>
+#ifndef LINUX
+#ifndef WINDOWS
+
+#error No platform specified.
+
+#endif
+#endif
 
 #ifdef LINUX
 #include <errno.h>
