@@ -1,17 +1,14 @@
 [main.c]
-#include <main.h>
+#include "main.hpp"
 
 int main(void) {
 	std::cout << "hello, world!" << std::endl;
 }
 
 [main.h]
-#ifndef MAIN
-#define MAIN
+#pragma once
 
 #include <iostream>
-
-#endif
 
 [makefile]
 # Extended template makefile
@@ -31,20 +28,20 @@ LFLAGS   :=
 INCLUDES := $(HDR_DIR)/
 CPPFLAGS := 
 
-SOURCES   := $(shell find $(SRC_DIR) -type f -name '*.c')
-LIBS      := $(shell find $(LIBS_DIR) -type f -name '*.c')
-OBJS      := $(patsubst $(SRC_DIR)/%.c,$(OUT_DIR)/%.o,$(SOURCES))
-OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.c,$(OUT_DIR)/%.o,$(LIBS))
+SOURCES   := $(shell find $(SRC_DIR) -type f -name '*.cpp')
+LIBS      := $(shell find $(LIBS_DIR) -type f -name '*.cpp')
+OBJS      := $(patsubst $(SRC_DIR)/%.cpp,$(OUT_DIR)/%.o,$(SOURCES))
+OBJS_LIBS := $(patsubst $(LIBS_DIR)/%.cpp,$(OUT_DIR)/%.o,$(LIBS))
 
 all: $(TARGET) resources
 
 $(TARGET): $(OBJS) $(OBJS_LIBS) | $(ALL_DIRS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc)) $(LFLAGS)
 
-$(OUT_DIR)/%.o:: $(SRC_DIR)/%.c
+$(OUT_DIR)/%.o:: $(SRC_DIR)/%.cpp
 	mkdir -p $(@D)/ && $(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
 
-$(OUT_DIR)/%.o:: $(LIBS_DIR)/%.c
+$(OUT_DIR)/%.o:: $(LIBS_DIR)/%.cpp
 	mkdir -p $(@D)/ && $(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
 
 $(ALL_DIRS):

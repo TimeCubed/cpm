@@ -1,17 +1,14 @@
 [main.c]
-#include <main.h>
+#include "main.hpp"
 
 int main(void) {
 	std::cout << "hello, world!" << std::endl;
 }
 
 [main.h]
-#ifndef MAIN
-#define MAIN
+#pragma once
 
 #include <iostream>
-
-#endif
 
 [makefile]
 # No folders template makefile
@@ -23,17 +20,17 @@ LFLAGS   :=
 INCLUDES := ./
 CPPFLAGS := 
 
-SOURCES   := $(shell find ./ -type f -name '*.c')
+SOURCES   := $(shell find ./ -type f -name '*.cpp')
 LIBS      := 
-OBJS      := $(patsubst %.c,%.o,$(SOURCES))
-OBJS_LIBS := $(patsubst %.c,%.o,$(LIBS))
+OBJS      := $(patsubst %.cpp,%.o,$(SOURCES))
+OBJS_LIBS := $(patsubst %.cpp,%.o,$(LIBS))
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS) $(OBJS_LIBS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJS) $(OBJS_LIBS) -o $(TARGET) $(foreach inc, $(INCLUDES), -I $(inc))
 
-%.o: %.c
+%.o: %.cpp
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(foreach inc, $(INCLUDES), -I $(inc))
 
 clean:
