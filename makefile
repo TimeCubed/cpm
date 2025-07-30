@@ -24,7 +24,7 @@ ALL_DIRS := $(ROOT_DIR) $(OUT_DIR) $(BIN_DIR) $(MAIN_DIR) $(SRC_DIR) $(HDR_DIR) 
 TARGET   := $(BIN_DIR)/cpm
 
 CC       := gcc
-CFLAGS   := -Werror -Wall -Wextra -Wpedantic
+CFLAGS   := -Werror -Wall -Wextra -Wpedantic -O3
 CPPFLAGS := 
 LFLAGS   := 
 
