@@ -124,6 +124,9 @@ int main(int argc, char** argv) {
 
 	if (path == NULL) {
 		printf("cpm: ERROR: failed to get current executable path\n");
+
+		cli_free();
+
 		return 1;
 	}
 
@@ -147,6 +150,8 @@ int main(int argc, char** argv) {
 	// no project names given or an invalid argument was given, so we'll quit
 	// and print the help menu
 	if (nonSwitchIndex == -1) {
+		cli_free();
+
 		printHelp();
 	}
 
@@ -160,6 +165,10 @@ int main(int argc, char** argv) {
 	config_loadFiles();
 	if (isError(config_checkError())) {
 		printf("cpm: ERROR: failed to create project\n");
+
+		config_freeCurrent();
+		cli_free();
+
 		return 1;
 	}
 
@@ -171,10 +180,16 @@ int main(int argc, char** argv) {
 	// build everything
 	if (isError(buildProject())) {
 		printf("cpm: ERROR: failed to create project\n");
+
+		config_freeCurrent();
+		cli_free();
+
 		return 1;
 	}
 
 	verbose("cpm: finishing up..\n");
 	printf("cpm: successfully created project '%s'\n", config_getCurrent().name.contents);
+
 	config_freeCurrent();
+	cli_free();
 }
