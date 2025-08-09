@@ -45,7 +45,6 @@ int addSwitch(const char* switchName, Func callback) {
 			return ERROR_NOT_ENOUGH_MEMORY;
 		}
 
-
 		callbacks[0] = callback;
 		switches[0] = switchName;
 
@@ -123,4 +122,9 @@ int parseArgv(int argc, char** argv) {
 	}
 
 	return nonSwitchIndex;
+}
+
+void cli_free(void) {
+	if (switches) free(switches);
+	if (callbacks) free(callbacks);
 }

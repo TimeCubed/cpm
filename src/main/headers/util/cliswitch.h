@@ -26,4 +26,6 @@ int addSwitch(const char* switchName, Func callback);
  */
 int parseArgv(int argc, char** argv);
 
+void cli_free(void);
+
 #endif
