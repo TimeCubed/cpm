@@ -168,6 +168,10 @@ void config_loadFiles(void) {
 		return;
 	}
 
+	cstring_free(&currentConfig->makefile);
+	cstring_free(&currentConfig->mainH);
+	cstring_free(&currentConfig->mainC);
+
 	currentConfig->mainC    = cstring_init(mainC, mcLength);
 	currentConfig->mainH    = cstring_init(mainH, mhLength);
 	currentConfig->makefile = cstring_init(makefile, mkLength);
@@ -188,7 +192,7 @@ void config_setName(String name) {
 
 	m_error = STATUS_OK;
 
-	if (currentConfig->name.contents != NULL) free(currentConfig->name.contents);
+	cstring_free(&currentConfig->name);
 
 	currentConfig->name = name;
 }
@@ -237,10 +241,10 @@ void config_freeCurrent(void) {
 		return;
 	}
 
-	cstring_free(&currentConfig->name);
-	cstring_free(&currentConfig->mainC);
-	cstring_free(&currentConfig->mainH);
 	cstring_free(&currentConfig->makefile);
+	cstring_free(&currentConfig->mainH);
+	cstring_free(&currentConfig->mainC);
+	cstring_free(&currentConfig->name);
 
 	currentConfig = NULL;
 	m_error = STATUS_OK;
